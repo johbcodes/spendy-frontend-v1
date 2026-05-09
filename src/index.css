@@ -1,0 +1,229 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Premium Dark Theme Palette */
+  --bg-main: #0a0f18;
+  --bg-surface: #111827;
+  --bg-surface-light: #1f2937;
+
+  --primary: #f59e0b;
+  /* Amber/Gold */
+  --primary-hover: #d97706;
+  --primary-light: rgba(245, 158, 11, 0.1);
+
+  --accent: #38bdf8;
+  /* Sky Blue */
+  --accent-hover: #0ea5e9;
+
+  --success: #10b981;
+  --warning: #facc15;
+  --error: #f43f5e;
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --border-main: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.04);
+
+  --glass-bg: rgba(17, 24, 39, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(245, 158, 11, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Premium Buttons */
+.btn-premium {
+  @apply px-6 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  color: #000;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+}
+
+.btn-premium:hover {
+  @apply scale-[1.02] -translate-y-0.5;
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+}
+
+.btn-premium:active {
+  @apply scale-[0.98] translate-y-0;
+}
+
+.btn-glass {
+  @apply px-6 py-2.5 rounded-xl font-semibold transition-all duration-300 border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center gap-2;
+}
+
+/* Custom Animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-surface-light);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
+}
+
+/* Input Fields */
+input,
+select,
+textarea {
+  @apply bg-gray-900/50 border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/50 focus:border-primary/50 outline-none transition-all duration-200 text-white placeholder-gray-500;
+}
+
+/* Table Enhancements */
+.premium-table {
+  @apply w-full border-collapse;
+}
+
+.premium-table th {
+  @apply px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-text-dim border-b border-white/5;
+}
+
+.premium-table td {
+  @apply px-6 py-4 text-sm border-b border-white/5 transition-colors duration-150;
+}
+
+.premium-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Badge Styles */
+.badge {
+  @apply px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter;
+}
+
+.badge-success {
+  @apply bg-success/10 text-success border border-success/20;
+}
+
+.badge-warning {
+  @apply bg-warning/10 text-warning border border-warning/20;
+}
+
+.badge-error {
+  @apply bg-error/10 text-error border border-error/20;
+}
+
+.badge-primary {
+  @apply bg-primary/10 text-primary border border-primary/20;
+}
+
+/* Dashboard Cards */
+.stat-card {
+  @apply glass-card p-6 flex flex-col gap-2;
+}
+
+.stat-label {
+  @apply text-sm text-text-muted font-medium;
+}
+
+.stat-value {
+  @apply text-3xl font-bold text-white;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+
+  .btn-premium,
+  .btn-glass {
+    @apply px-4 py-2 text-sm;
+  }
+
+  .stat-value {
+    @apply text-2xl;
+  }
+}

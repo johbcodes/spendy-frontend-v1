@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix Wallets - Comprehensive Diagnostics</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #252526;
+            border-radius: 5px;
+        }
+        h1 { color: #4ec9b0; margin-top: 0; }
+        h2 { color: #569cd6; margin-top: 0; }
+        pre {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: monospace;
+        }
+        button:hover { background: #1177bb; }
+        button.danger { background: #f48771; }
+        button.danger:hover { background: #e06555; }
+        button.success { background: #4ec9b0; }
+        button.success:hover { background: #3eb19f; }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .warning { color: #dcdcaa; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #3e3e42;
+        }
+        th { background: #1e1e1e; color: #4ec9b0; }
+        .issue { background: #3a1f1f; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Spendy Wallet Diagnostics & Fix</h1>
+
+    <div class="section">
+        <h2>Current User</h2>
+        <pre id="currentUser"></pre>
+    </div>
+
+    <div class="section">
+        <h2>All Wallets</h2>
+        <div id="walletsTable"></div>
+    </div>
+
+    <div class="section">
+        <h2>Issues Detected</h2>
+        <pre id="issues"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Actions</h2>
+        <button onclick="runDiagnostics()">🔍 Run Diagnostics</button>
+        <button class="success" onclick="fixAllIssues()">✨ Auto-Fix All Issues</button>
+        <button class="danger" onclick="assignCompanyIds()">🔧 Assign Missing CompanyIds</button>
+        <button onclick="location.href='/'">↩️ Return to App</button>
+    </div>
+
+    <div class="section">
+        <h2>Log</h2>
+        <pre id="log"></pre>
+    </div>
+
+    <script>
+        function log(msg, type = 'info') {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const colors = { info: '#d4d4d4', success: '#4ec9b0', error: '#f48771', warning: '#dcdcaa' };
+            logEl.innerHTML += `<span style="color: ${colors[type]}">[${time}] ${msg}</span>\n`;
+        }
+
+        function runDiagnostics() {
+            log('🔍 Starting diagnostics...', 'info');
+
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const wallets = JSON.parse(localStorage.getItem('spendy_wallets') || '[]');
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+
+            // Display current user
+            document.getElementById('currentUser').textContent = JSON.stringify({
+                name: `${currentUser.firstName} ${currentUser.lastName}`,
+                email: currentUser.email,
+                role: currentUser.role,
+                company: currentUser.companyName,
+                accountNumber: currentUser.spendyAccountNumber
+            }, null, 2);
+
+            // Analyze wallets
+            const issues = [];
+            let html = '<table><tr><th>Name</th><th>Type</th><th>Company</th><th>Owner</th><th>Balance</th><th>Status</th></tr>';
+
+            wallets.forEach((w, i) => {
+                const hasCompanyId = !!w.companyId;
+                const isUserWallet = w.type === 'USER';
+                const hasOwner = !!w.ownerId;
+                const rowClass = !hasCompanyId ? 'issue' : '';
+
+                let ownerInfo = '-';
+                if (isUserWallet && w.ownerId) {
+                    const owner = users.find(u => u.id === w.ownerId);
+                    ownerInfo = owner ? `${owner.firstName} ${owner.lastName}` : `Unknown (${w.ownerId.substring(0, 8)})`;
+                }
+
+                html += `<tr class="${rowClass}">
+                    <td>${w.name}</td>
+                    <td>${w.type}</td>
+                    <td>${hasCompanyId ? w.companyId : '<span class="error">❌ MISSING</span>'}</td>
+                    <td>${ownerInfo}</td>
+                    <td>KES ${w.balance.toLocaleString()}</td>
+                    <td>${w.status}</td>
+                </tr>`;
+
+                // Detect issues
+                if (!hasCompanyId) {
+                    issues.push(`❌ Wallet "${w.name}" has no companyId`);
+                }
+                if (isUserWallet && !hasOwner) {
+                    issues.push(`⚠️ USER wallet "${w.name}" has no ownerId`);
+                }
+            });
+
+            html += '</table>';
+            document.getElementById('walletsTable').innerHTML = html;
+
+            // Display issues
+            const issuesEl = document.getElementById('issues');
+            if (issues.length === 0) {
+                issuesEl.innerHTML = '<span class="success">✅ No issues detected! All wallets properly configured.</span>';
+                log('✅ No issues found', 'success');
+            } else {
+                issuesEl.innerHTML = issues.join('\n');
+                log(`⚠️ Found ${issues.length} issue(s)`, 'warning');
+            }
+
+            // Check by company
+            const byCompany = {};
+            wallets.forEach(w => {
+                const company = w.companyId || 'NO_COMPANY';
+                if (!byCompany[company]) byCompany[company] = [];
+                byCompany[company].push(w);
+            });
+
+            log('', 'info');
+            log('📊 Wallets by Company:', 'info');
+            for (const [company, companyWallets] of Object.entries(byCompany)) {
+                log(`  ${company}: ${companyWallets.length} wallet(s) - ${companyWallets.map(w => w.name).join(', ')}`, 'info');
+            }
+        }
+
+        function assignCompanyIds() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const wallets = JSON.parse(localStorage.getItem('spendy_wallets') || '[]');
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+
+            if (!currentUser.companyName) {
+                log('❌ No current user or company name', 'error');
+                alert('Please log in first');
+                return;
+            }
+
+            if (!confirm(`Assign missing companyIds to "${currentUser.companyName}"?\n\nThis will set companyId for all wallets without one.`)) {
+                return;
+            }
+
+            let fixed = 0;
+            const updatedWallets = wallets.map(w => {
+                if (!w.companyId) {
+                    fixed++;
+                    log(`✅ Assigning companyId "${currentUser.companyName}" to wallet: ${w.name}`, 'success');
+                    return { ...w, companyId: currentUser.companyName };
+                }
+                return w;
+            });
+
+            localStorage.setItem('spendy_wallets', JSON.stringify(updatedWallets));
+            log('', 'info');
+            log(`✅ Fixed ${fixed} wallet(s)`, 'success');
+            alert(`Fixed ${fixed} wallet(s). Refresh diagnostics to verify.`);
+            runDiagnostics();
+        }
+
+        function fixAllIssues() {
+            log('🔧 Auto-fixing all issues...', 'info');
+
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const wallets = JSON.parse(localStorage.getItem('spendy_wallets') || '[]');
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+
+            // Build a map of companies from users
+            const companies = {};
+            users.forEach(u => {
+                if (u.companyName && !companies[u.companyName]) {
+                    companies[u.companyName] = [];
+                }
+            });
+
+            // Try to infer companyId from wallet owner
+            const updatedWallets = wallets.map(w => {
+                if (!w.companyId) {
+                    if (w.ownerId) {
+                        // Find owner
+                        const owner = users.find(u => u.id === w.ownerId);
+                        if (owner && owner.companyName) {
+                            log(`✅ Wallet "${w.name}" assigned to company: ${owner.companyName} (via owner)`, 'success');
+                            return { ...w, companyId: owner.companyName };
+                        }
+                    }
+                    // Fallback to current user's company
+                    log(`⚠️ Wallet "${w.name}" assigned to company: ${currentUser.companyName} (fallback)`, 'warning');
+                    return { ...w, companyId: currentUser.companyName };
+                }
+                return w;
+            });
+
+            localStorage.setItem('spendy_wallets', JSON.stringify(updatedWallets));
+            log('✅ Auto-fix complete!', 'success');
+            alert('Auto-fix complete! Refresh diagnostics to verify.');
+            runDiagnostics();
+        }
+
+        // Auto-run diagnostics on load
+        runDiagnostics();
+    </script>
+</body>
+</html>

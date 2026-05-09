@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset & Fix Spendy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+            text-align: center;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .warning-box h2 {
+            color: #856404;
+            margin-top: 0;
+        }
+        button {
+            width: 100%;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(79, 172, 254, 0.4);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .info-section {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .info-section h3 {
+            color: #004085;
+            margin-top: 0;
+        }
+        ul {
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Spendy System Reset & Fix</h1>
+
+        <div class="warning-box">
+            <h2>⚠️ Warning</h2>
+            <p><strong>This will DELETE ALL DATA including:</strong></p>
+            <ul>
+                <li>All users and companies</li>
+                <li>All wallets and transactions</li>
+                <li>All events, expenses, and payments</li>
+                <li>All suppliers and inventory</li>
+            </ul>
+            <p>You will need to create a new account after this.</p>
+        </div>
+
+        <div class="info-section">
+            <h3>✨ What Will Be Fixed</h3>
+            <ul>
+                <li><strong>Wallet Creation:</strong> All users get personal wallets with companyId</li>
+                <li><strong>Company Wallets:</strong> Operations, Events, Main wallets with proper isolation</li>
+                <li><strong>Event Type → Wallet Mapping:</strong>
+                    <ul>
+                        <li>Event type "Event" → Events Wallet</li>
+                        <li>Event type "Operation" → Operations Wallet</li>
+                        <li>Event type "Activation" → Events Wallet</li>
+                    </ul>
+                </li>
+                <li><strong>Staff Flow:</strong> Staff can create expenses without seeing company wallets</li>
+                <li><strong>Admin Approval:</strong> Pre-selects correct wallet based on event type (editable)</li>
+                <li><strong>Wallet Isolation:</strong> Each company only sees their own wallets</li>
+            </ul>
+        </div>
+
+        <button class="btn-danger" onclick="resetEverything()">
+            🗑️ DELETE ALL DATA & START FRESH
+        </button>
+
+        <button class="btn-success" onclick="window.location.href='/'">
+            ↩️ Return to Spendy
+        </button>
+
+        <div class="info-section">
+            <h3>📋 Console Output</h3>
+            <pre id="console"></pre>
+        </div>
+    </div>
+
+    <script>
+        function log(msg) {
+            const console = document.getElementById('console');
+            const time = new Date().toLocaleTimeString();
+            console.innerHTML += `[${time}] ${msg}\n`;
+        }
+
+        function resetEverything() {
+            // First confirmation
+            if (!confirm('⚠️ Are you absolutely sure you want to DELETE ALL DATA?\n\nThis cannot be undone!')) {
+                return;
+            }
+
+            // Second confirmation
+            if (!confirm('⚠️⚠️ FINAL WARNING!\n\nAll users, wallets, events, expenses, and data will be permanently deleted.\n\nType OK in your mind and click OK to proceed.')) {
+                return;
+            }
+
+            log('🗑️ Starting complete system reset...');
+
+            // List of all localStorage keys to remove
+            const keys = [
+                'users',
+                'currentUser',
+                'isAuthenticated',
+                'spendy_wallets',
+                'spendy_events',
+                'spendy_expenses',
+                'spendy_transactions',
+                'spendy_requests',
+                'spendy_activitylog',
+                'spendy_payments',
+                'spendy_suppliers',
+                'spendy_inventory',
+                'spendy_systemData',
+                'spendy_notifications'
+            ];
+
+            let removed = 0;
+            keys.forEach(key => {
+                const existed = localStorage.getItem(key) !== null;
+                localStorage.removeItem(key);
+                if (existed) {
+                    log(`✅ Removed: ${key}`);
+                    removed++;
+                }
+            });
+
+            log('');
+            log('═══════════════════════════════════════');
+            log('✅ SYSTEM RESET COMPLETE!');
+            log(`   Removed ${removed} data store(s)`);
+            log('═══════════════════════════════════════');
+            log('');
+            log('✨ System is now clean and ready for fresh setup');
+            log('');
+            log('📝 Next Steps:');
+            log('   1. Click "Return to Spendy"');
+            log('   2. Sign up with your company details');
+            log('   3. System will create:');
+            log('      - Main Wallet');
+            log('      - Operations Wallet');
+            log('      - Events Wallet');
+            log('      - Your personal ADMIN WALLET');
+            log('   4. All wallets will have proper companyId');
+            log('   5. Add staff/users - they get personal wallets');
+            log('   6. Test expense flow:');
+            log('      - Staff creates expense');
+            log('      - Event type determines wallet');
+            log('      - Admin approves with wallet selection');
+            log('');
+            log('🎉 Everything will work correctly!');
+
+            alert('✅ System reset complete!\n\nClick OK to return to Spendy and create a new account.');
+
+            // Redirect after a short delay
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+        }
+
+        log('✨ Ready to reset system');
+        log('📌 Click the red button above to proceed');
+    </script>
+</body>
+</html>
