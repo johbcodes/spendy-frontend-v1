@@ -6,7 +6,7 @@ import { getDefaultSourceWalletType, hasSufficientBalance } from '../walletRules
 
 describe('Spendy business rules', () => {
   it('maps event types to the correct default source wallet', () => {
-    expect(getDefaultSourceWalletType('Project')).toBe('Events');
+    expect(getDefaultSourceWalletType('Event')).toBe('Events');
     expect(getDefaultSourceWalletType('Operation')).toBe('Operations');
     expect(getDefaultSourceWalletType('Activation')).toBe('Activation');
   });

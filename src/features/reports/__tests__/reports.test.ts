@@ -42,7 +42,7 @@ describe('Reports Rules', () => {
       const requests: Request[] = [
         {
           id: '1',
-          type: 'Project',
+          type: 'Event',
           name: 'Test Request 1',
           category: 'Marketing',
           amount: 1000,
@@ -53,7 +53,7 @@ describe('Reports Rules', () => {
         },
         {
           id: '2',
-          type: 'Project',
+          type: 'Event',
           name: 'Test Request 2',
           category: 'Marketing',
           amount: 2000,
@@ -64,7 +64,7 @@ describe('Reports Rules', () => {
         },
         {
           id: '3',
-          type: 'Project',
+          type: 'Event',
           name: 'Test Request 3',
           category: 'Marketing',
           amount: 500,
@@ -310,7 +310,7 @@ describe('Reports API', () => {
         {
           id: '1',
           name: 'Event 1',
-          type: 'Project',
+          type: 'Event',
           category: 'Corporate',
           client: 'Client A',
           budget: 10000,
@@ -323,7 +323,7 @@ describe('Reports API', () => {
         {
           id: '2',
           name: 'Event 2',
-          type: 'Project',
+          type: 'Event',
           category: 'Corporate',
           client: 'Client B',
           budget: 15000,
@@ -336,7 +336,7 @@ describe('Reports API', () => {
         {
           id: '3',
           name: 'Event 3',
-          type: 'Project',
+          type: 'Event',
           category: 'Corporate',
           client: 'Client A',
           budget: 12000,

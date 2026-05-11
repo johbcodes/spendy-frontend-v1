@@ -5,6 +5,8 @@ export type UserRole = "Admin" | "Approver" | "Staff" | "Store Manager";
 export type UserModule =
   | "Dashboard"
   | "Events"
+  | "Activations"
+  | "Operations"
   | "All"
   | "Wallets"
   | "Expenses"
@@ -32,7 +34,7 @@ export type EventStatus =
   | "Completed"
   | "Cancelled"
   | "Archived";
-export type EventType = "Project" | "Activation" | "Operation";
+export type EventType = "Event" | "Activation" | "Operation";
 export type RequestStatus = "Pending" | "Approved" | "Rejected" | "Completed";
 export type PaymentStatus = "Pending" | "Completed" | "Failed" | "Reconciled";
 export type TransactionStatus = "Pending" | "Completed" | "Failed";
@@ -119,6 +121,10 @@ export interface Event {
   status: EventStatus;
   location?: string;
   documents: string[];
+  // Activation-only fields
+  product?: string;
+  campaignName?: string;
+  activationChannel?: string;
 }
 export interface Wallet {
   id: string;
@@ -211,7 +217,7 @@ export interface Expense {
   rejectionReason?: string; // Reason for rejection if applicable
   // Batch Expense Fields
   expenseRequestType?: "single" | "batch";
-  expenseContextType?: "Activation" | "Project" | "Operation";
+  expenseContextType?: "Event" | "Activation" | "Operation";
   totalAmount?: number;
   isCompleteBatchExpense?: boolean;
   batchCategories?: Array<{

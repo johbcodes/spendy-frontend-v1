@@ -53,7 +53,7 @@ const approverUser: User = {
 const launchEvent: Event = {
   id: 'e-launch',
   name: 'Launch Night',
-  type: 'Project',
+  type: 'Event',
   category: 'Launch',
   client: 'Acme',
   budget: 100000,

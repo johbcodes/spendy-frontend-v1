@@ -283,7 +283,7 @@ export function Analytics({ events, expenses, payments, wallets = [], requests =
   // Expense by Event Type breakdown
   const expenseByEventType = useMemo(() => {
     const eventExpenseTotal = filteredExpenses
-      .filter(exp => exp.eventId && events.find(e => e.id === exp.eventId && e.type === 'Project'))
+      .filter(exp => exp.eventId && events.find(e => e.id === exp.eventId && e.type === 'Event'))
       .reduce((sum, exp) => sum + exp.amount, 0);
 
     const activationExpenseTotal = filteredExpenses

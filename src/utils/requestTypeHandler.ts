@@ -1,4 +1,4 @@
-import { Request, Expense } from '../types';
+import { Request, Expense, EventType } from '../types';
 
 /**
  * Request Type Handler
@@ -59,7 +59,7 @@ export class RequestTypeHandler {
     // Base request data
     const baseRequest: Request = {
       id: expense.id || `req-${Date.now()}`,
-      type: expense.expenseContextType || 'Project',
+      type: (expense.expenseContextType || 'Event') as EventType,
       name: expense.title || `${expense.eventName || 'Expense'} - ${expense.category}`,
       category: expense.category,
       amount: expense.amount,

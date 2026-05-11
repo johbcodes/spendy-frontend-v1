@@ -425,7 +425,7 @@ export function App() {
           if (!requestExists) {
             const request: Request = {
               id: generateUUID(),
-              type: (expense.expenseType || 'Project') as EventType,
+              type: (expense.expenseType || 'Event') as EventType,
               name: expense.title,
               category: expense.category,
               eventId: expense.eventId || undefined,
@@ -815,7 +815,7 @@ export function App() {
                 if (!requestExists) {
                   const request: Request = {
                     id: generateUUID(),
-                    type: (expense.expenseType || 'Project') as EventType,
+                    type: (expense.expenseType || 'Event') as EventType,
                     name: expense.title,
                     category: expense.category,
                     eventId: expense.eventId || undefined,
@@ -1341,7 +1341,7 @@ export function App() {
       /*
       const response = await eventAPI.create({
         name: eventData.name || '',
-        type: eventData.type || 'Project',
+        type: eventData.type || 'Event',
         category: eventData.category || '',
         client: eventData.client || '',
         brand: eventData.brands?.[0] || '',
@@ -1510,6 +1510,19 @@ export function App() {
     showToast(`Activation category "${category}" added successfully`, 'success');
   };
 
+  const handleAddOperationCategory = (category: string) => {
+    const updatedSystemData = {
+      ...systemData,
+      operationcategorys: [
+        ...(systemData.operationcategorys || []),
+        { id: generateUUID(), name: category, status: 'Active', dateCreated: new Date().toISOString() }
+      ]
+    };
+    setSystemData(updatedSystemData);
+    localStorage.setItem('spendy_systemData', JSON.stringify(updatedSystemData));
+    showToast(`Operation category "${category}" added successfully`, 'success');
+  };
+
   const handleAddClient = (client: Record<string, unknown>) => {
     const updatedSystemData = {
       ...systemData,
@@ -1640,7 +1653,7 @@ export function App() {
       // Operations → Operations Wallet
       targetWallet = companyWallets.find(w => w.type === 'Operations Wallet');
       console.log(`📝 [Add Expense] Event type "Operation" → Looking for Operations Wallet, found: ${targetWallet?.name || 'NONE'}`);
-    } else if (eventType === 'Project' || eventType === 'Activation') {
+    } else if (eventType === 'Event' || eventType === 'Activation') {
       // Events and Activations → Events Wallet
       // First try to find event-specific wallet
       targetWallet = companyWallets.find(w => w.type === 'Events Wallet' && w.linkedEvent === expenseData.eventId);
@@ -1815,7 +1828,7 @@ export function App() {
 
         const newRequest: Request = {
           id: requestId,
-          type: event?.type || 'Project',
+          type: (event?.type || 'Event') as EventType,
           name: requestName,
           category: newExpense.category,
           eventId: event?.id,
@@ -3568,7 +3581,11 @@ export function App() {
         }
         return <Dashboard onNavigate={handleNavigate} onOpenModal={handleOpenModal} currentUser={currentUser!} events={scopedEvents} wallets={walletsArray} expenses={scopedExpenses} payments={scopedPayments} requests={scopedRequests} suppliers={suppliers} activityLog={activityLog} />;
       case 'events':
-        return <Events onNavigate={handleNavigate} onOpenModal={handleOpenModal} onArchiveEvent={handleArchiveEvent} events={scopedEvents} payments={scopedPayments} currentUser={currentUser!} />;
+        return <Events onNavigate={handleNavigate} onOpenModal={handleOpenModal} onArchiveEvent={handleArchiveEvent} events={scopedEvents.filter(e => e.type === 'Event')} payments={scopedPayments} currentUser={currentUser!} pageName="Events" lockedType="Event" />;
+      case 'activations':
+        return <Events onNavigate={handleNavigate} onOpenModal={handleOpenModal} onArchiveEvent={handleArchiveEvent} events={scopedEvents.filter(e => e.type === 'Activation')} payments={scopedPayments} currentUser={currentUser!} pageName="Activations" lockedType="Activation" />;
+      case 'operations':
+        return <Events onNavigate={handleNavigate} onOpenModal={handleOpenModal} onArchiveEvent={handleArchiveEvent} events={scopedEvents.filter(e => e.type === 'Operation')} payments={scopedPayments} currentUser={currentUser!} pageName="Operations" lockedType="Operation" />;
       case 'event-detail': {
         if (selectedId) {
           const event = scopedEvents.find(e => e.id === selectedId);
@@ -3576,7 +3593,7 @@ export function App() {
             return <EventDetail event={event} expenses={scopedExpenses} requests={scopedRequests} payments={scopedPayments} wallets={walletsArray} inventory={inventory} invoices={invoices} activityLog={activityLog} onNavigate={handleNavigate} onOpenModal={handleOpenModal} onArchiveEvent={handleArchiveEvent} onUpdateEventStatus={handleUpdateEventStatus} currentUser={currentUser!} />;
           }
         }
-        return <Events onNavigate={handleNavigate} onOpenModal={handleOpenModal} onArchiveEvent={handleArchiveEvent} events={scopedEvents} payments={scopedPayments} currentUser={currentUser!} />;
+        return <Events onNavigate={handleNavigate} onOpenModal={handleOpenModal} onArchiveEvent={handleArchiveEvent} events={scopedEvents.filter(e => e.type === 'Event')} payments={scopedPayments} currentUser={currentUser!} pageName="Events" lockedType="Event" />;
       }
       case 'edit-event': {
         if (selectedId) {
@@ -3593,7 +3610,7 @@ export function App() {
             />;
           }
         }
-        return <Events onNavigate={handleNavigate} onOpenModal={handleOpenModal} onArchiveEvent={handleArchiveEvent} events={events} payments={payments} currentUser={currentUser!} />;
+        return <Events onNavigate={handleNavigate} onOpenModal={handleOpenModal} onArchiveEvent={handleArchiveEvent} events={scopedEvents.filter(e => e.type === 'Event')} payments={scopedPayments} currentUser={currentUser!} pageName="Events" lockedType="Event" />;
       }
       case 'wallets': {
         // CRITICAL SAFETY: Ensure only current company's wallets are passed
@@ -3888,7 +3905,7 @@ export function App() {
       </PageContainer>
 
       {/* Modals */}
-      <NewEventModal isOpen={activeModal === 'new-event'} onClose={handleCloseModal} onSuccess={handleAddEvent} users={users} clients={systemData.clients} eventCategories={systemData.eventcategorys} activationCategories={systemData.activationcategorys} operationCategories={systemData.operationcategorys} systemData={systemData} onAddEventCategory={handleAddEventCategory} onAddActivationCategory={handleAddActivationCategory} onAddClient={handleAddClient} onAddBrand={handleAddBrand} />
+      <NewEventModal isOpen={activeModal === 'new-event'} onClose={handleCloseModal} onSuccess={handleAddEvent} users={users} clients={systemData.clients} eventCategories={systemData.eventcategorys} activationCategories={systemData.activationcategorys} operationCategories={systemData.operationcategorys} systemData={systemData} defaultEventGroup={modalData?.defaultEventGroup as 'Event' | 'Activation' | 'Operation' | undefined} onAddEventCategory={handleAddEventCategory} onAddActivationCategory={handleAddActivationCategory} onAddOperationCategory={handleAddOperationCategory} onAddClient={handleAddClient} onAddBrand={handleAddBrand} />
       <NewWalletModal isOpen={activeModal === 'new-wallet'} onClose={handleCloseModal} events={events} currentUser={currentUser!} onSuccess={(data: Partial<Wallet>) => {
       handleAddWallet(data);
       handleCloseModal();

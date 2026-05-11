@@ -143,7 +143,7 @@ export function calculateExpenseByEventType(
   events: Event[]
 ): CategoryBreakdown[] {
   const eventExpenseTotal = expenses
-    .filter(exp => exp.eventId && events.find(e => e.id === exp.eventId && e.type === 'Project'))
+    .filter(exp => exp.eventId && events.find(e => e.id === exp.eventId && e.type === 'Event'))
     .reduce((sum, exp) => sum + exp.amount, 0);
 
   const activationExpenseTotal = expenses

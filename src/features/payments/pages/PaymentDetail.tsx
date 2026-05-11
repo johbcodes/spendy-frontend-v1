@@ -123,7 +123,7 @@ export function PaymentDetail({
       if (requiresApproval) {
         const approvalRequest: Request = {
           id: Date.now().toString(),
-          type: 'Project',
+          type: 'Event',
           name: `Payment Request: ${expense.title}`,
           category: expense.category,
           amount: parseFloat(amount),

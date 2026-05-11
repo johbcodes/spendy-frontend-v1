@@ -4,8 +4,10 @@ export default {
     extend: {
       colors: {
         primary: "#98e23f",
+        "primary-hover": "#7bc230",
         secondary: "#093b40",
         azure: "#093b40",
+        accent: "#3b82f6",
         "dark-gray": "#1a1a1a",
         "light-gray": "#f2f2f2",
         success: "#10b981",
@@ -15,6 +17,11 @@ export default {
           main: "#f8fafc",
           muted: "#94a3b8",
           dim: "#64748b",
+        },
+        surface: {
+          DEFAULT: "#ffffff",
+          light: "#f8fafc",
+          secondary: "#f2f2f2",
         },
       },
       fontFamily: {

@@ -78,7 +78,7 @@ export function BatchApprovalReview({
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'Project':
+      case 'Event':
         return 'bg-blue-50 border-blue-200';
       case 'Activation':
         return 'bg-purple-50 border-purple-200';

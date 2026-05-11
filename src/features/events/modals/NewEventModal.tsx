@@ -17,8 +17,10 @@ interface NewEventModalProps {
   activationCategories?: any[];
   operationCategories?: any[];
   systemData?: any;
+  defaultEventGroup?: 'Event' | 'Activation' | 'Operation';
   onAddEventCategory?: (category: string) => void;
   onAddActivationCategory?: (category: string) => void;
+  onAddOperationCategory?: (category: string) => void;
   onAddClient?: (client: any) => void;
   onAddBrand?: (clientId: string, brand: string) => void;
 }
@@ -32,12 +34,14 @@ export function NewEventModal({
   activationCategories,
   operationCategories,
   systemData,
+  defaultEventGroup,
   onAddEventCategory,
   onAddActivationCategory,
+  onAddOperationCategory,
   onAddClient,
   onAddBrand
 }: NewEventModalProps) {
-  const [eventGroup, setEventGroup] = useState<'Project' | 'Activation' | 'Operation'>('Project');
+  const [eventGroup, setEventGroup] = useState<'Event' | 'Activation' | 'Operation'>(defaultEventGroup ?? 'Event');
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -47,7 +51,10 @@ export function NewEventModal({
     endDate: '',
     projectLead: '',
     location: '',
-    description: ''
+    description: '',
+    product: '',
+    campaignName: '',
+    activationChannel: '',
   });
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [brandInput, setBrandInput] = useState('');
@@ -73,7 +80,7 @@ export function NewEventModal({
   
   const selectedClient = clients?.find(c => c.name === formData.client);
   const availableBrands = selectedClient?.brands || [];
-  const categories = eventGroup === 'Project' ? eventCategories : eventGroup === 'Activation' ? activationCategories : operationCategories;
+  const categories = eventGroup === 'Event' ? eventCategories : eventGroup === 'Activation' ? activationCategories : operationCategories;
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
@@ -104,9 +111,17 @@ export function NewEventModal({
   };
 
   const handleAddCategoryClick = () => {
-    const categoryList = eventGroup === 'Project' ? systemData?.eventcategorys : systemData?.activationcategorys;
+    const categoryList = eventGroup === 'Event'
+      ? systemData?.eventcategorys
+      : eventGroup === 'Activation'
+      ? systemData?.activationcategorys
+      : systemData?.operationcategorys;
     if (newCategory.trim() && categoryList && !categoryList.some((c: any) => c.name === newCategory)) {
-      const callback = eventGroup === 'Project' ? onAddEventCategory : onAddActivationCategory;
+      const callback = eventGroup === 'Event'
+        ? onAddEventCategory
+        : eventGroup === 'Activation'
+        ? onAddActivationCategory
+        : onAddOperationCategory;
       if (callback) {
         callback(newCategory);
         handleChange('category', newCategory);
@@ -176,11 +191,14 @@ export function NewEventModal({
       endDate: '',
       projectLead: '',
       location: '',
-      description: ''
+      description: '',
+      product: '',
+      campaignName: '',
+      activationChannel: '',
     });
     setSelectedBrands([]);
     setUploadedDocuments([]);
-    setEventGroup('Project');
+    setEventGroup(defaultEventGroup ?? 'Event');
     setDateError('');
   };
   const handleChange = (field: string, value: string) => {
@@ -194,53 +212,58 @@ export function NewEventModal({
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
+  const categoryLabel = eventGroup === 'Event' ? 'Event Category' : eventGroup === 'Activation' ? 'Activation Category' : 'Operation Category';
+  const nameLabel = eventGroup === 'Event' ? 'Event Name' : eventGroup === 'Activation' ? 'Activation Name' : 'Operation Name';
+
   return <Modal isOpen={isOpen} onClose={onClose} title={`New ${eventGroup}`} size="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Select label="Event Group" options={[{
-        value: 'Project',
-        label: 'Project'
-      }, {
-        value: 'Activation',
-        label: 'Activation'
-      }, {
-        value: 'Operation',
-        label: 'Operation'
-      }]} value={eventGroup} onChange={e => {
-        setEventGroup(e.target.value as 'Project' | 'Activation' | 'Operation');
-        setFormData({
-          name: '',
-          category: '',
-          client: '',
-          budget: '',
-          startDate: '',
-          endDate: '',
-          projectLead: '',
-          location: '',
-          description: ''
-        });
-        setSelectedBrands([]);
-      }} required />
-        <Input label={eventGroup === 'Project' ? 'Project Name' : eventGroup === 'Activation' ? 'Activation Name' : 'Operation Name'} value={formData.name} onChange={e => handleChange('name', e.target.value)} required />
+        {!defaultEventGroup && (
+          <Select label="Type" options={[{
+            value: 'Event',
+            label: 'Event'
+          }, {
+            value: 'Activation',
+            label: 'Activation'
+          }, {
+            value: 'Operation',
+            label: 'Operation'
+          }]} value={eventGroup} onChange={e => {
+            setEventGroup(e.target.value as 'Event' | 'Activation' | 'Operation');
+            setFormData({
+              name: '',
+              category: '',
+              client: '',
+              budget: '',
+              startDate: '',
+              endDate: '',
+              projectLead: '',
+              location: '',
+              description: '',
+              product: '',
+              campaignName: '',
+              activationChannel: '',
+            });
+            setSelectedBrands([]);
+          }} />
+        )}
+        <Input label={nameLabel} value={formData.name} onChange={e => handleChange('name', e.target.value)} required />
         {!showAddCategory ? (
-          // Hide category input entirely for Operation eventGroup
-          eventGroup !== 'Operation' ? (
           <div className="flex gap-2">
-            <Select label={eventGroup === 'Project' ? 'Project Category' : 'Activation Category'} options={[{
-        value: '',
-        label: 'Select category'
-      }, ...(categories || []).map(cat => ({
-        value: cat.name,
-        label: cat.name
-      }))]} value={formData.category} onChange={e => handleChange('category', e.target.value)} required />
+            <Select label={categoryLabel} options={[{
+              value: '',
+              label: 'Select category'
+            }, ...(categories || []).map((cat: any) => ({
+              value: cat.name,
+              label: cat.name
+            }))]} value={formData.category} onChange={e => handleChange('category', e.target.value)} required />
             <Button type="button" variant="secondary" size="sm" className="mt-6" onClick={() => setShowAddCategory(true)}>
               <PlusIcon className="w-4 h-4" /> Add
             </Button>
           </div>
-          ) : null
         ) : (
           <div className="space-y-2">
             <label className="block text-sm font-medium text-dark-gray">
-              New {eventGroup === 'Project' ? 'Project' : 'Activation'} Category
+              New {categoryLabel}
             </label>
             <Input placeholder="Category name" value={newCategory} onChange={e => setNewCategory(e.target.value)} />
             <div className="flex gap-2">
@@ -248,13 +271,27 @@ export function NewEventModal({
                 Add Category
               </Button>
               <Button type="button" variant="secondary" size="sm" onClick={() => {
-        setShowAddCategory(false);
-        setNewCategory('');
-      }}>
+                setShowAddCategory(false);
+                setNewCategory('');
+              }}>
                 Cancel
               </Button>
             </div>
           </div>
+        )}
+        {eventGroup === 'Activation' && (
+          <>
+            <Input label="Campaign Name (Optional)" value={formData.campaignName} onChange={e => handleChange('campaignName', e.target.value)} />
+            <Input label="Product / SKU (Optional)" value={formData.product} onChange={e => handleChange('product', e.target.value)} />
+            <Select label="Activation Channel (Optional)" options={[
+              { value: '', label: 'Select channel' },
+              { value: 'In-store', label: 'In-store' },
+              { value: 'Outdoor', label: 'Outdoor' },
+              { value: 'Digital', label: 'Digital' },
+              { value: 'Trade Show', label: 'Trade Show' },
+              { value: 'Experiential', label: 'Experiential' },
+            ]} value={formData.activationChannel} onChange={e => handleChange('activationChannel', e.target.value)} />
+          </>
         )}
         {eventGroup !== 'Operation' && (
           <>
@@ -348,7 +385,9 @@ export function NewEventModal({
             )}
           </>
         )}
-        <Input label="Budget (KES) (Optional)" type="number" value={formData.budget} onChange={e => handleChange('budget', e.target.value)} />
+        {eventGroup !== 'Operation' && (
+          <Input label="Budget (KES) (Optional)" type="number" value={formData.budget} onChange={e => handleChange('budget', e.target.value)} />
+        )}
         <div className="grid grid-cols-2 gap-4">
           <Input label="Start Date & Time" type="datetime-local" value={formData.startDate} onChange={e => {
             handleChange('startDate', e.target.value);
@@ -371,9 +410,7 @@ export function NewEventModal({
         value: user.id,
         label: `${user.firstName} ${user.lastName}`
       }))]} value={formData.projectLead} onChange={e => handleChange('projectLead', e.target.value)} required />
-        {eventGroup !== 'Operation' && (
-          <Input label="Location" value={formData.location} onChange={e => handleChange('location', e.target.value)} required />
-        )}
+        <Input label="Location (Optional)" value={formData.location} onChange={e => handleChange('location', e.target.value)} />
         <div>
           <label className="block text-sm font-medium text-dark-gray mb-1">
             Description

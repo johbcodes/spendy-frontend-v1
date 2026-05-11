@@ -230,7 +230,7 @@ export function Approvals({
         </div>
   }, {
     id: 'event-expenses',
-    label: `Project Expenses (${eventRequests.length})`,
+    label: `Event Expenses (${eventRequests.length})`,
     content: <div className="space-y-4">
           <p className="text-sm text-gray-600">
             {eventRequests.filter(r => r.status === 'Pending').length} pending requests
@@ -369,8 +369,8 @@ export function Approvals({
             value: 'all',
             label: 'All Types'
           }, {
-            value: 'Project',
-            label: 'Project'
+            value: 'Event',
+            label: 'Event'
           }, {
             value: 'Activation',
             label: 'Activation'

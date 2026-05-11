@@ -24,7 +24,7 @@ export const DEFAULT_COMPANY_WALLETS = [
 ] as const;
 
 // Event Types
-export const EVENT_TYPES: EventType[] = ['Project', 'Activation', 'Operation'];
+export const EVENT_TYPES: EventType[] = ['Event', 'Activation', 'Operation'];
 
 // Event Statuses
 export const EVENT_STATUSES: EventStatus[] = [
@@ -171,6 +171,8 @@ export const ROUTES = {
   EVENTS: 'events',
   EVENT_DETAIL: 'event-detail',
   EDIT_EVENT: 'edit-event',
+  ACTIVATIONS: 'activations',
+  OPERATIONS: 'operations',
   WALLETS: 'wallets',
   WALLET_DETAIL: 'wallet-detail',
   EXPENSES: 'expenses',

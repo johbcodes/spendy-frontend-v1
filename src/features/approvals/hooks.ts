@@ -12,7 +12,7 @@ export function useApprovalFilters(
     const filtered = filterRequests(requests, searchTerm, statusFilter);
     return {
       allRequests: filtered,
-      eventRequests: filterRequestsByType(filtered, 'Project'),
+      eventRequests: filterRequestsByType(filtered, 'Event'),
       activationRequests: filterRequestsByType(filtered, 'Activation'),
       operationRequests: filterRequestsByType(filtered, 'Operation'),
     };

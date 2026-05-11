@@ -37,7 +37,7 @@ export function ApproveExpenseModal({
   // Pre-select the default wallet based on event type
   useEffect(() => {
     if (isOpen && walletsArray.length > 0) {
-      const eventType = request.type || ''; // Event type: 'Project', 'Operation', 'Activation'
+      const eventType = request.type || '';
 
       let defaultWallet: Wallet | undefined;
 
@@ -47,7 +47,7 @@ export function ApproveExpenseModal({
         // Operations use the Operations Wallet.
         defaultWallet = walletsArray.find(w => w.type === 'Operations Wallet');
         console.log('[Approval] Event type "Operation" uses Operations Wallet');
-      } else if (eventType === 'Project' || eventType === 'Activation') {
+      } else if (eventType === 'Event' || eventType === 'Activation') {
         // Events and activations use the Events Wallet.
         defaultWallet = walletsArray.find(w => w.type === 'Events Wallet');
         console.log(`[Approval] Event type "${eventType}" uses Events Wallet`);

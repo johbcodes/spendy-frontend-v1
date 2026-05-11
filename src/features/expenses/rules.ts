@@ -11,7 +11,7 @@ export function getExpenseStatusVariant(
 }
 
 export function filterEventsForExpenseType(events: Event[], selectedType: string): Event[] {
-  if (selectedType === 'event') return events.filter(event => event.type === 'Project');
+  if (selectedType === 'event') return events.filter(event => event.type === 'Event');
   if (selectedType === 'activation') return events.filter(event => event.type === 'Activation');
   if (selectedType === 'operational') return events.filter(event => event.type === 'Operation');
   return events;

@@ -16,7 +16,7 @@ export type Request = AppRequest & {
 export interface ApprovalFilters {
   searchTerm: string;
   statusFilter: 'all' | 'approved' | 'pending' | 'rejected';
-  typeFilter?: 'Project' | 'Activation' | 'Operation' | 'all';
+  typeFilter?: 'Event' | 'Activation' | 'Operation' | 'all';
 }
 
 export interface ApprovalStats {

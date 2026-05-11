@@ -37,7 +37,7 @@ const adminUser: User = {
 const launchEvent: Event = {
   id: 'event-1',
   name: 'Launch',
-  type: 'Project',
+  type: 'Event',
   category: 'Launch',
   client: 'Acme',
   budget: 100000,

@@ -59,6 +59,10 @@ export const hasPageAccess = (user: User | null, page: string): boolean => {
     'events': 'Events',
     'event-detail': 'Events',
     'edit-event': 'Events',
+    'activations': 'Activations',
+    'activation-detail': 'Activations',
+    'operations': 'Operations',
+    'operation-detail': 'Operations',
     'wallets': 'Wallets',
     'wallet-detail': 'Wallets',
     'expenses': 'Expenses',
@@ -82,7 +86,9 @@ export const hasPageAccess = (user: User | null, page: string): boolean => {
     'edit-user': 'Users',
     'system-setup': 'System Setup',
     'connect-wallet-page': 'Wallets',
-    'upload-document-page': 'Events'
+    'upload-document-page': 'Events',
+    'upload-document-page-activation': 'Activations',
+    'upload-document-page-operation': 'Operations'
   };
 
   // Check module-based access first
@@ -130,8 +136,10 @@ export const hasComponentAccess = (user: User | null, componentId: string, modul
       // Staff capabilities (expenses and payments)
       'add-expense', 'view-expense', 'make-payment', 'view-payment',
       'expense-list', 'payment-list',
-      // Event management
+      // Event / Activation / Operation management
       'event-list', 'event-detail', 'add-event', 'edit-event',
+      'activation-list', 'activation-detail', 'add-activation',
+      'operation-list', 'operation-detail', 'add-operation',
       // Approval capabilities
       'approval-list', 'request-review', 'approve-button', 'reject-button',
       // Inventory access
@@ -536,7 +544,7 @@ export const getDefaultModulesForRole = (role: string): UserModule[] => {
     case 'Staff':
       return ['Expenses', 'Payments'];
     case 'Approver':
-      return ['Events', 'Expenses', 'Payments', 'Approvals', 'Inventory'];
+      return ['Events', 'Activations', 'Operations', 'Expenses', 'Payments', 'Approvals', 'Inventory'];
     case 'Store Manager':
       return ['Inventory', 'Expenses'];
     default:

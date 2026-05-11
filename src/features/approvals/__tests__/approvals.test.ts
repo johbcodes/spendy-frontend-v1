@@ -18,7 +18,7 @@ describe('Approvals Rules', () => {
     it('should identify batch expense requests', () => {
       const request: Request = {
         id: '1',
-        type: 'Project',
+        type: 'Event',
         name: 'Test Request',
         category: 'Marketing',
         amount: 1000,
@@ -34,7 +34,7 @@ describe('Approvals Rules', () => {
     it('should identify bulk payment requests', () => {
       const request: Request = {
         id: '1',
-        type: 'Project',
+        type: 'Event',
         name: 'Test Request',
         category: 'Marketing',
         amount: 1000,
@@ -50,7 +50,7 @@ describe('Approvals Rules', () => {
     it('should return false for single requests', () => {
       const request: Request = {
         id: '1',
-        type: 'Project',
+        type: 'Event',
         name: 'Test Request',
         category: 'Marketing',
         amount: 1000,
@@ -67,7 +67,7 @@ describe('Approvals Rules', () => {
     it('should return totalAmount for batch requests', () => {
       const request: Request = {
         id: '1',
-        type: 'Project',
+        type: 'Event',
         name: 'Test Request',
         category: 'Marketing',
         amount: 1000,
@@ -84,7 +84,7 @@ describe('Approvals Rules', () => {
     it('should calculate sum from batchPaymentDetails', () => {
       const request: Request = {
         id: '1',
-        type: 'Project',
+        type: 'Event',
         name: 'Test Request',
         category: 'Marketing',
         amount: 1000,
@@ -103,7 +103,7 @@ describe('Approvals Rules', () => {
     it('should return amount for single requests', () => {
       const request: Request = {
         id: '1',
-        type: 'Project',
+        type: 'Event',
         name: 'Test Request',
         category: 'Marketing',
         amount: 1000,
@@ -142,7 +142,7 @@ describe('Approvals Rules', () => {
     it('should return true if expense has payment', () => {
       const request: Request = {
         id: '1',
-        type: 'Project',
+        type: 'Event',
         name: 'Test Request',
         category: 'Marketing',
         amount: 1000,
@@ -173,7 +173,7 @@ describe('Approvals Rules', () => {
     it('should return false if expense has no payment', () => {
       const request: Request = {
         id: '1',
-        type: 'Project',
+        type: 'Event',
         name: 'Test Request',
         category: 'Marketing',
         amount: 1000,
@@ -191,17 +191,17 @@ describe('Approvals Rules', () => {
 
   describe('isBatchExpenseRequest', () => {
     it('returns true when expenseRequestType is batch', () => {
-      const req: Request = { id: '1', type: 'Project', name: 'Batch', category: 'Marketing', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending', expenseRequestType: 'batch' };
+      const req: Request = { id: '1', type: 'Event', name: 'Batch', category: 'Marketing', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending', expenseRequestType: 'batch' };
       expect(isBatchExpenseRequest(req)).toBe(true);
     });
 
     it('returns true when name contains (batch expense)', () => {
-      const req: Request = { id: '1', type: 'Project', name: 'Event (Batch Expense)', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending' };
+      const req: Request = { id: '1', type: 'Event', name: 'Event (Batch Expense)', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending' };
       expect(isBatchExpenseRequest(req)).toBe(true);
     });
 
     it('returns false for single expense requests', () => {
-      const req: Request = { id: '1', type: 'Project', name: 'Single', category: 'Ops', amount: 500, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending' };
+      const req: Request = { id: '1', type: 'Event', name: 'Single', category: 'Ops', amount: 500, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending' };
       expect(isBatchExpenseRequest(req)).toBe(false);
     });
   });
@@ -209,7 +209,7 @@ describe('Approvals Rules', () => {
   describe('hasBatchDisbursement', () => {
     it('returns true when batchPaymentDetails has more than 1 entry and not a batch expense', () => {
       const req: Request = {
-        id: '1', type: 'Project', name: 'Disbursement', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending',
+        id: '1', type: 'Event', name: 'Disbursement', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending',
         batchPaymentDetails: [
           { name: 'P1', idNumber: '1', amount: 100, reference: 'R1', paymentMethod: 'mpesa' },
           { name: 'P2', idNumber: '2', amount: 200, reference: 'R2', paymentMethod: 'mpesa' },
@@ -220,7 +220,7 @@ describe('Approvals Rules', () => {
 
     it('returns false when only 1 payment detail entry', () => {
       const req: Request = {
-        id: '1', type: 'Project', name: 'Single', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending',
+        id: '1', type: 'Event', name: 'Single', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending',
         batchPaymentDetails: [{ name: 'P1', idNumber: '1', amount: 100, reference: 'R1', paymentMethod: 'mpesa' }],
       };
       expect(hasBatchDisbursement(req)).toBe(false);
@@ -228,7 +228,7 @@ describe('Approvals Rules', () => {
 
     it('returns false when expenseRequestType is batch even with multiple entries', () => {
       const req: Request = {
-        id: '1', type: 'Project', name: 'Batch', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending',
+        id: '1', type: 'Event', name: 'Batch', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending',
         expenseRequestType: 'batch',
         batchPaymentDetails: [
           { name: 'P1', idNumber: '1', amount: 100, reference: 'R1', paymentMethod: 'mpesa' },
@@ -241,19 +241,19 @@ describe('Approvals Rules', () => {
 
   describe('hasAssignedSupplier', () => {
     it('returns true when linked expense has a supplier', () => {
-      const req: Request = { id: '1', type: 'Project', name: 'R', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending', expenseId: 'e-1' };
+      const req: Request = { id: '1', type: 'Event', name: 'R', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending', expenseId: 'e-1' };
       const expenses: Expense[] = [{ id: 'e-1', supplier: 'Acme Corp' } as any];
       expect(hasAssignedSupplier(req, expenses)).toBe(true);
     });
 
     it('returns false when linked expense has no supplier', () => {
-      const req: Request = { id: '1', type: 'Project', name: 'R', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending', expenseId: 'e-1' };
+      const req: Request = { id: '1', type: 'Event', name: 'R', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending', expenseId: 'e-1' };
       const expenses: Expense[] = [{ id: 'e-1' } as any];
       expect(hasAssignedSupplier(req, expenses)).toBe(false);
     });
 
     it('returns false when request has no expenseId', () => {
-      const req: Request = { id: '1', type: 'Project', name: 'R', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending' };
+      const req: Request = { id: '1', type: 'Event', name: 'R', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending' };
       expect(hasAssignedSupplier(req, [])).toBe(false);
     });
   });
@@ -261,7 +261,7 @@ describe('Approvals Rules', () => {
   describe('getBatchRecipientCount', () => {
     it('counts from batchPaymentDetails on request', () => {
       const req: Request = {
-        id: '1', type: 'Project', name: 'R', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending',
+        id: '1', type: 'Event', name: 'R', category: 'Ops', amount: 0, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending',
         batchPaymentDetails: [
           { name: 'P1', idNumber: '1', amount: 100, reference: 'R1', paymentMethod: 'mpesa' },
           { name: 'P2', idNumber: '2', amount: 200, reference: 'R2', paymentMethod: 'mpesa' },
@@ -272,7 +272,7 @@ describe('Approvals Rules', () => {
     });
 
     it('returns 0 when no batch data present', () => {
-      const req: Request = { id: '1', type: 'Project', name: 'R', category: 'Ops', amount: 500, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending' };
+      const req: Request = { id: '1', type: 'Event', name: 'R', category: 'Ops', amount: 500, description: '', requestedBy: 'A', dateRequested: '2024-01-01', status: 'Pending' };
       expect(getBatchRecipientCount(req, [])).toBe(0);
     });
   });
@@ -320,7 +320,7 @@ describe('Approvals API', () => {
     const requests: Request[] = [
       {
         id: '1',
-        type: 'Project',
+        type: 'Event',
         name: 'Marketing Campaign',
         category: 'Marketing',
         amount: 1000,

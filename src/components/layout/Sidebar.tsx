@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboardIcon, CalendarIcon, WalletIcon, PackageIcon, UsersIcon, TrendingUpIcon, UserIcon, SettingsIcon, LogOutIcon, ChevronDownIcon, ChevronRightIcon, FileTextIcon, CreditCardIcon, CheckCircleIcon, TruckIcon, MenuIcon, FileIcon, BoxIcon } from 'lucide-react';
+import { LayoutDashboardIcon, CalendarIcon, WalletIcon, PackageIcon, UsersIcon, TrendingUpIcon, UserIcon, SettingsIcon, LogOutIcon, ChevronDownIcon, ChevronRightIcon, FileTextIcon, CreditCardIcon, CheckCircleIcon, TruckIcon, MenuIcon, FileIcon, BoxIcon, ZapIcon, WrenchIcon } from 'lucide-react';
 import { User, UserModule } from '../../types';
 import { hasModuleAccess, getAccessibleMenuItems } from '../../utils/accessControl';
 
@@ -36,6 +36,18 @@ export function Sidebar({
       label: 'Events',
       icon: CalendarIcon,
       module: 'Events' as UserModule
+    },
+    {
+      id: 'activations',
+      label: 'Activations',
+      icon: ZapIcon,
+      module: 'Activations' as UserModule
+    },
+    {
+      id: 'operations',
+      label: 'Operations',
+      icon: WrenchIcon,
+      module: 'Operations' as UserModule
     },
     {
       id: 'wallets',
@@ -146,6 +158,18 @@ export function Sidebar({
       module: 'Events' as UserModule
     },
     {
+      id: 'activations',
+      label: 'Activations',
+      icon: ZapIcon,
+      module: 'Activations' as UserModule
+    },
+    {
+      id: 'operations',
+      label: 'Operations',
+      icon: WrenchIcon,
+      module: 'Operations' as UserModule
+    },
+    {
       id: 'approvals',
       label: 'Approvals',
       icon: CheckCircleIcon,
@@ -227,7 +251,7 @@ export function Sidebar({
         )}
         <button
           onClick={onToggleCollapse}
-          className="p-2 hover:bg-blue-50 rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 group"
+          className="p-2 hover:bg-azure/5 rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 group"
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <MenuIcon className="w-5 h-5 text-gray-700 group-hover:text-azure transition-colors duration-200" />
@@ -258,7 +282,7 @@ export function Sidebar({
                         }
                       }
                     }}
-                    className="w-full flex items-center justify-between px-3 py-2.5 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 hover:shadow-sm group"
+                    className="w-full flex items-center justify-between px-3 py-2.5 text-gray-700 hover:bg-azure/5 rounded-lg transition-all duration-200 hover:shadow-sm group"
                     title={isCollapsed ? item.label : undefined}
                   >
                     <div className="flex items-center space-x-3">
@@ -287,8 +311,8 @@ export function Sidebar({
                             onClick={() => onNavigate(subItem.id)}
                             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                               isActive(subItem.id)
-                                ? 'bg-azure bg-opacity-15 text-azure font-medium shadow-sm shadow-blue-200/50'
-                                : 'text-gray-600 hover:bg-blue-50 hover:text-azure hover:translate-x-1'
+                                ? 'bg-azure/15 text-azure font-medium shadow-sm shadow-azure/20'
+                                : 'text-gray-600 hover:bg-azure/5 hover:text-azure hover:translate-x-1'
                             }`}
                           >
                             <subItem.icon className="w-4 h-4" />
@@ -303,8 +327,8 @@ export function Sidebar({
                   onClick={() => onNavigate(item.id)}
                   className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
                     isActive(item.id)
-                      ? 'bg-azure bg-opacity-15 text-azure font-medium shadow-sm shadow-blue-200/50'
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-azure hover:translate-x-1'
+                      ? 'bg-azure/15 text-azure font-medium shadow-sm shadow-azure/20'
+                      : 'text-gray-700 hover:bg-azure/5 hover:text-azure hover:translate-x-1'
                   }`}
                   title={isCollapsed ? item.label : undefined}
                 >
@@ -325,8 +349,8 @@ export function Sidebar({
             onClick={() => onNavigate(item.id)}
             className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
               isActive(item.id)
-                ? 'bg-azure bg-opacity-15 text-azure font-medium shadow-sm'
-                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-azure/15 text-azure font-medium shadow-sm'
+                : 'text-gray-700 hover:bg-azure/5 hover:text-azure'
             }`}
             title={isCollapsed ? item.label : undefined}
           >

@@ -57,7 +57,7 @@ export function EditRequestModal({
   const getCategories = () => {
     if (request.type === 'Operation') {
       return ['Logistics', 'Setup', 'Breakdown', 'Transportation', 'Staff Costs', 'Office Supplies', 'Utilities', 'Other'];
-    } else if (request.type === 'Project') {
+    } else if (request.type === 'Event') {
       return ['Corporate Event', 'Product Launch', 'Conference', 'Workshop', 'Trade Show', 'Other'];
     } else {
       // Activation categories

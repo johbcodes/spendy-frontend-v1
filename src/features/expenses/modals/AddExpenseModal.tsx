@@ -64,7 +64,7 @@ export function AddExpenseModal({
 
   const [expenseRequestType, setExpenseRequestType] = useState<'single' | 'batch'>('single');
   const [expenseGroup, setExpenseGroup] = useState<'Project Expenses' | 'Operational Expense' | 'Activation Expense'>('Project Expenses');
-  const [expenseContextType, setExpenseContextType] = useState<'Activation' | 'Project' | 'Operation'>('Project');
+  const [expenseContextType, setExpenseContextType] = useState<'Event' | 'Activation' | 'Operation'>('Event');
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [assignSupplier, setAssignSupplier] = useState(false);
@@ -402,12 +402,12 @@ export function AddExpenseModal({
     switch (expenseContextType) {
       case 'Activation':
         return 'Activation';
-      case 'Project':
-        return 'Project';
+      case 'Event':
+        return 'Event';
       case 'Operation':
         return 'Operation';
       default:
-        return 'Project';
+        return 'Event';
     }
   };
 
@@ -1570,7 +1570,7 @@ export function AddExpenseModal({
               onChange={e => {
                 setExpenseGroup(e.target.value as any);
                 // Update expenseContextType to match the expenseGroup
-                const newContextType = e.target.value === 'Project Expenses' ? 'Project' :
+                const newContextType = e.target.value === 'Project Expenses' ? 'Event' :
                                       e.target.value === 'Activation Expense' ? 'Activation' : 'Operation';
                 setExpenseContextType(newContextType);
               }}
