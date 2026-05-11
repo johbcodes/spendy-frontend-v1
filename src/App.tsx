@@ -3922,17 +3922,18 @@ export function App() {
         handleEditWallet(updatedWallet);
         handleCloseModal();
       }} />
-      <FundWalletModal isOpen={activeModal === 'fund-wallet'} onClose={handleCloseModal} wallets={wallets} onSuccess={(updatedWallets) => {
-        // Find the wallet that was funded and create transaction
-        const fundedWallet = updatedWallets.find(w => wallets.find(ow => ow.id === w.id && ow.balance !== w.balance));
-        if (fundedWallet) {
-          const fundAmount = fundedWallet.balance - (wallets.find(w => w.id === fundedWallet.id)?.balance || 0);
-          createTransaction(fundedWallet.id, 'Fund', fundAmount, 'Fund Deposit');
-        }
-        setWallets(updatedWallets);
-        showToast('Wallet funded successfully', 'success');
-        handleCloseModal();
-      }} />
+      <FundWalletModal
+        isOpen={activeModal === 'fund-wallet'}
+        onClose={handleCloseModal}
+        wallets={wallets}
+        paybillNumber={currentUser?.spendyPaybillNumber || '247247'}
+        mpesaAccountRef={currentUser?.spendyAccountNumber}
+        onSuccess={() => {
+          showToast('Top-up initiated — your wallet will be credited shortly', 'success');
+          handleCloseModal();
+          walletCtrl.refreshWallets();
+        }}
+      />
       <WalletTransferModal isOpen={activeModal === 'wallet-transfer'} onClose={handleCloseModal} wallets={wallets} onSuccess={(updatedWallets, transferData) => {
         setWallets(updatedWallets);
         // Create paired transactions for wallet transfer

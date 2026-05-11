@@ -23,8 +23,8 @@ export const walletFeatureApi = {
       description: `Fund via ${payload.paymentMethod}`,
     }),
 
-  topup: (walletId: string, phone: string, amount: number) =>
-    walletsApi.topup(walletId, { phone, amount }),
+  topup: (phone: string, amount: number) =>
+    walletsApi.topup({ phone, amount }),
 
   transfer: (payload: TransferPayload) =>
     walletsApi.transfer({

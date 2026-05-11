@@ -57,13 +57,8 @@ export function AddExpenseModal({
   const walletsArray = Array.isArray(wallets) ? wallets : (wallets as any)?.data || [];
   const eventsArray = Array.isArray(events) ? events : (events as any)?.data || [];
 
-  console.log('?? AddExpenseModal received events prop:', events);
-  console.log('?? AddExpenseModal eventsArray:', eventsArray.length, eventsArray);
-  console.log('?? Is events an array?', Array.isArray(events));
-  console.log('?? Events raw:', events);
-
   const [expenseRequestType, setExpenseRequestType] = useState<'single' | 'batch'>('single');
-  const [expenseGroup, setExpenseGroup] = useState<'Project Expenses' | 'Operational Expense' | 'Activation Expense'>('Project Expenses');
+  const [expenseGroup, setExpenseGroup] = useState<'Event Expenses' | 'Operational Expense' | 'Activation Expense'>('Event Expenses');
   const [expenseContextType, setExpenseContextType] = useState<'Event' | 'Activation' | 'Operation'>('Event');
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
@@ -374,8 +369,8 @@ export function AddExpenseModal({
 
   const getExpenseLabel = () => {
     switch (expenseGroup) {
-      case 'Project Expenses':
-        return 'Project Expense';
+      case 'Event Expenses':
+        return 'Event Expense';
       case 'Operational Expense':
         return 'Operational Expense';
       case 'Activation Expense':
@@ -387,14 +382,14 @@ export function AddExpenseModal({
 
   const getEventLabel = () => {
     switch (expenseGroup) {
-      case 'Project Expenses':
-        return 'Project';
+      case 'Event Expenses':
+        return 'Event';
       case 'Operational Expense':
         return 'Department/Operation';
       case 'Activation Expense':
         return 'Activation';
       default:
-        return 'Project';
+        return 'Event';
     }
   };
 
@@ -425,96 +420,29 @@ export function AddExpenseModal({
   };
 
   // Filter events based on expense group
-  console.log('?? Starting filtering with expenseGroup:', expenseGroup);
-  console.log('?? Events to filter:', eventsArray.length);
-
-  const filteredEvents = eventsArray.filter(e => {
-    console.log('?? Checking event:', e.name, {
-      status: e.status,
-      type: e.type,
-      endDate: e.endDate,
-      endDateType: typeof e.endDate,
-      endDateParsed: new Date(e.endDate),
-      today: new Date(),
-      isArchived: e.status === 'Archived',
-      isCancelled: e.status === 'Cancelled',
-      isPast: new Date(e.endDate) < new Date()
-    });
-
-    // Exclude archived, cancelled, and past events
-    if (e.status === 'Archived' || e.status === 'Cancelled') {
-      console.log('? Filtered out (archived/cancelled):', e.name);
-      return false;
-    }
-
-    // Check if event has ended (past event)
-    if (!e.endDate) {
-      console.log('? Filtered out (no end date):', e.name);
-      return false;
-    }
+  const filteredEvents = eventsArray.filter((e: any) => {
+    if (e.status === 'Archived' || e.status === 'Cancelled') return false;
+    if (!e.endDate) return false;
 
     const eventEndDate = new Date(e.endDate);
     const today = new Date();
-
-    console.log('?? Date comparison for', e.name, ':', {
-      eventEndDate,
-      today,
-      eventEndDateValid: !isNaN(eventEndDate.getTime()),
-      todayValid: !isNaN(today.getTime())
-    });
-
-    // Compare dates only (ignore time) to avoid timezone issues
     const eventDateOnly = new Date(eventEndDate.getFullYear(), eventEndDate.getMonth(), eventEndDate.getDate());
     const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-    console.log('?? Date-only comparison:', {
-      eventDateOnly,
-      todayDateOnly,
-      isPast: eventDateOnly < todayDateOnly
-    });
+    if (eventDateOnly < todayDateOnly) return false;
 
-    if (eventDateOnly < todayDateOnly) {
-      console.log('? Filtered out (past event):', e.name, 'eventDate:', eventDateOnly, 'today:', todayDateOnly);
-      return false;
-    }
-
-    // Filter by type based on expense group
-    console.log('?? Checking type match:', {
-      expenseGroup,
-      eventType: e.type,
-      shouldMatch: expenseGroup === 'Project Expenses' ? 'Project' : expenseGroup === 'Activation Expense' ? 'Activation' : 'Operation'
-    });
-
-    if (expenseGroup === 'Project Expenses') {
-      const matches = e.type === 'Project';
-      if (!matches) console.log('? Filtered out (wrong type):', e.name, 'type:', e.type, 'expected: Project');
-      else console.log('? Event passed all filters:', e.name);
-      return matches;
-    }
-    if (expenseGroup === 'Activation Expense') {
-      const matches = e.type === 'Activation';
-      if (!matches) console.log('? Filtered out (wrong type):', e.name, 'type:', e.type, 'expected: Activation');
-      else console.log('? Event passed all filters:', e.name);
-      return matches;
-    }
-    if (expenseGroup === 'Operational Expense') {
-      const matches = e.type === 'Operation';
-      if (!matches) console.log('? Filtered out (wrong type):', e.name, 'type:', e.type, 'expected: Operation');
-      else console.log('? Event passed all filters:', e.name);
-      return matches;
-    }
-    console.log('? Event passed all filters (no group filter):', e.name);
+    if (expenseGroup === 'Event Expenses') return e.type === 'Event' || e.type === 'Project';
+    if (expenseGroup === 'Activation Expense') return e.type === 'Activation';
+    if (expenseGroup === 'Operational Expense') return e.type === 'Operation';
     return true;
   });
-
-  console.log('? Filtered events for', expenseGroup, ':', filteredEvents.length, filteredEvents);
 
   // Get categories from system data based on expense group
   const getCategories = () => {
     let categoriesArray = [];
 
     // Select the appropriate category array based on expense group
-    if (expenseGroup === 'Project Expenses') {
+    if (expenseGroup === 'Event Expenses') {
       categoriesArray = systemData.expensecategorys || [];
     } else if (expenseGroup === 'Activation Expense') {
       categoriesArray = systemData.activationcategorys || [];
@@ -532,7 +460,7 @@ export function AddExpenseModal({
 
   const getCategoryLabel = () => {
     // Return appropriate label based on expense group
-    if (expenseGroup === 'Project Expenses') return 'Expense Category';
+    if (expenseGroup === 'Event Expenses') return 'Expense Category';
     if (expenseGroup === 'Activation Expense') return 'Activation Category';
     if (expenseGroup === 'Operational Expense') return 'Operation Category';
     return 'Category';
@@ -543,8 +471,8 @@ export function AddExpenseModal({
   const getModalTitle = () => {
     const prefix = expense ? 'Edit' : 'Add';
     switch (expenseGroup) {
-      case 'Project Expenses':
-        return `${prefix} Project Expense`;
+      case 'Event Expenses':
+        return `${prefix} Event Expense`;
       case 'Operational Expense':
         return `${prefix} Operational Expense`;
       case 'Activation Expense':
@@ -1000,7 +928,7 @@ export function AddExpenseModal({
             <Select
               label="Expense Group"
               options={[
-                { value: 'Project Expenses', label: 'Project Expenses' },
+                { value: 'Event Expenses', label: 'Event Expenses' },
                 { value: 'Operational Expense', label: 'Operational Expense' },
                 { value: 'Activation Expense', label: 'Activation Expense' }
               ]}
@@ -1028,7 +956,7 @@ export function AddExpenseModal({
               label={getEventLabel()}
               options={[
                 { value: '', label: filteredEvents.length === 0 ? `No ${getEventLabel().toLowerCase()}s available (Total events: ${eventsArray.length})` : `Select ${getEventLabel().toLowerCase()}` },
-                ...filteredEvents.map(e => ({
+                ...filteredEvents.map((e: any) => ({
                   value: e.id,
                   label: e.name
                 }))
@@ -1562,7 +1490,7 @@ export function AddExpenseModal({
             <Select
               label="Expense Group"
               options={[
-                { value: 'Project Expenses', label: 'Project Expenses' },
+                { value: 'Event Expenses', label: 'Event Expenses' },
                 { value: 'Operational Expense', label: 'Operational Expense' },
                 { value: 'Activation Expense', label: 'Activation Expense' }
               ]}
@@ -1570,7 +1498,7 @@ export function AddExpenseModal({
               onChange={e => {
                 setExpenseGroup(e.target.value as any);
                 // Update expenseContextType to match the expenseGroup
-                const newContextType = e.target.value === 'Project Expenses' ? 'Event' :
+                const newContextType = e.target.value === 'Event Expenses' ? 'Event' :
                                       e.target.value === 'Activation Expense' ? 'Activation' : 'Operation';
                 setExpenseContextType(newContextType);
               }}
@@ -1581,7 +1509,7 @@ export function AddExpenseModal({
               label={getEventLabel()}
               options={[
                 { value: '', label: `Select ${getEventLabel().toLowerCase()}` },
-                ...filteredEvents.map(e => ({
+                ...filteredEvents.map((e: any) => ({
                   value: e.id,
                   label: e.name
                 }))

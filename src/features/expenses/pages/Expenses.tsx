@@ -98,7 +98,7 @@ export function Expenses({ onOpenModal, onNavigate, expenses, events }: Expenses
       <div className="flex flex-wrap gap-2">
         {[
           ['all', 'All Expenses'],
-          ['event', 'Project Expenses'],
+          ['event', 'Event Expenses'],
           ['activation', 'Activation Expenses'],
           ['operational', 'Operational Expenses'],
         ].map(([value, label]) => (

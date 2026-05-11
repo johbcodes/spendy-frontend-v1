@@ -36,7 +36,7 @@ export function filterExpenses(expenses: Expense[], filters: ExpenseFilters): Ex
       expense.status.toLowerCase() === filters.status.toLowerCase();
     const matchesType =
       filters.type === 'all' ||
-      (filters.type === 'event' && expense.expenseType === 'Project Expenses') ||
+      (filters.type === 'event' && (expense.expenseType === 'Event Expenses' || expense.expenseType === 'Project Expenses')) ||
       (filters.type === 'activation' && expense.expenseType === 'Activation Expense') ||
       (filters.type === 'operational' && expense.expenseType === 'Operational Expense');
 

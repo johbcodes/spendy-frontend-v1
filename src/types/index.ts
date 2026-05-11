@@ -129,23 +129,16 @@ export interface Event {
 export interface Wallet {
   id: string;
   name: string;
-  type:
-    | "Main Wallet"
-    | "Operations Wallet"
-    | "Events Wallet"
-    | "Event Wallet"
-    | "Company Wallet"
-    | "USER"
-    | "SYSTEM";
+  type: string; // Backend: 'Main' | 'Operations' | 'Events' | 'Activation' | 'Personal'; legacy: 'Main Wallet' etc.
   walletType?: "Main Operations" | "Event" | "Project" | "Department" | "User";
   balance: number;
   linkedEvent?: string;
-  status: "Active" | "Frozen";
+  status: "Active" | "Frozen" | string;
   createdAt: string;
   isDefault?: boolean;
-  ownerId?: string; // NULL for system wallets, user ID for user wallets
+  ownerId?: string;
   currency?: string;
-  companyId?: string; // Company isolation - wallets belong to specific companies
+  companyId?: string;
 }
 
 export interface WalletLedger {

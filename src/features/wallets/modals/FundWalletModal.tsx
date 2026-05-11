@@ -1,164 +1,255 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../components/ui/Modal';
 import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { PhoneInput } from '../../../components/ui/PhoneInput';
-import { InfoIcon } from 'lucide-react';
+import { InfoIcon, CheckCircleIcon, SmartphoneIcon, CreditCardIcon } from 'lucide-react';
+import { walletsApi } from '../../../lib/api/walletsApi';
 import type { Wallet } from '../../../types';
 
 interface FundWalletModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (updatedWallets: Wallet[]) => void;
+  onSuccess: (updatedWallets?: Wallet[]) => void;
   wallets?: Wallet[];
+  paybillNumber?: string;
+  mpesaAccountRef?: string | null;
 }
+
+type Step = 'form' | 'stk-pending' | 'success';
 
 export function FundWalletModal({
   isOpen,
   onClose,
   onSuccess,
-  wallets = []
+  paybillNumber = '247247',
+  mpesaAccountRef: propMpesaRef,
 }: FundWalletModalProps) {
-  // Normalize wallets data - handle both array and API response object
-  const walletsArray = Array.isArray(wallets) ? wallets : (wallets as any)?.data || [];
-
-  const [selectedWalletId, setSelectedWalletId] = useState('');
   const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'stk' | 'paybill' | 'till'>('stk');
+  const [paymentMethod, setPaymentMethod] = useState<'stk' | 'paybill'>('stk');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [step, setStep] = useState<Step>('form');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [mpesaAccountRef, setMpesaAccountRef] = useState<string | null>(propMpesaRef ?? null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isOpen && propMpesaRef === undefined) {
+      walletsApi.getMpesaRef()
+        .then(data => setMpesaAccountRef((data as any).data?.mpesaAccountRef ?? (data as any).mpesaAccountRef ?? null))
+        .catch(() => {/* non-fatal */});
+    }
+  }, [isOpen]);
+
+  const resetForm = () => {
+    setAmount('');
+    setPhoneNumber('');
+    setStep('form');
+    setError('');
+    setIsLoading(false);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const handleSTKPush = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!selectedWalletId || !amount) {
+    if (!phoneNumber || !amount) return;
+
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      setError('Please enter a valid amount');
       return;
     }
 
-    // Update wallet balance
-    const fundAmount = parseFloat(amount);
-    const updatedWallets = walletsArray.map((w: Wallet) =>
-      w.id === selectedWalletId
-        ? { ...w, balance: w.balance + fundAmount }
-        : w
-    );
-
-    onSuccess(updatedWallets);
-    
-    // Reset form
-    setSelectedWalletId('');
-    setAmount('');
-    setPhoneNumber('');
+    setIsLoading(true);
+    setError('');
+    try {
+      await walletsApi.topup({ phone: phoneNumber, amount: numAmount });
+      setStep('stk-pending');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message ?? err?.message ?? 'Failed to initiate payment';
+      setError(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const walletOptions = walletsArray.map((w: Wallet) => ({
-    value: w.id,
-    label: `${w.name} (KES ${w.balance.toLocaleString()})`
-  }));
+  const handlePaybillDone = () => {
+    setStep('success');
+    onSuccess();
+    setTimeout(() => {
+      resetForm();
+      onClose();
+    }, 2000);
+  };
 
-  const selectedWallet = walletsArray.find((w: Wallet) => w.id === selectedWalletId);
-  return <Modal isOpen={isOpen} onClose={onClose} title="Fund Wallet" size="lg">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Select 
-          label="Select Wallet" 
-          options={walletOptions}
-          value={selectedWalletId} 
-          onChange={e => setSelectedWalletId(e.target.value)} 
-          required 
-        />
+  return (
+    <Modal isOpen={isOpen} onClose={handleClose} title="Top Up Main Wallet" size="lg">
+      {step === 'stk-pending' ? (
+        <div className="space-y-6 text-center py-4">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center animate-pulse">
+              <SmartphoneIcon className="w-8 h-8 text-azure" />
+            </div>
+            <h3 className="text-lg font-semibold text-dark-gray">Check Your Phone</h3>
+            <p className="text-gray-600 text-sm max-w-xs">
+              An M-Pesa prompt has been sent to <strong>{phoneNumber}</strong>. Enter your PIN to complete the payment of <strong>KES {parseFloat(amount).toLocaleString()}</strong>.
+            </p>
+          </div>
 
-        <Input label="Amount (KES)" type="number" value={amount} onChange={e => setAmount(e.target.value)} required />
+          <Card className="bg-blue-50 border border-blue-200 text-left">
+            <div className="flex items-start gap-3">
+              <InfoIcon className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-900 space-y-1">
+                <p className="font-medium">Payment Instructions</p>
+                <p>1. A pop-up will appear on your phone</p>
+                <p>2. Enter your M-Pesa PIN</p>
+                <p>3. Your Main Wallet will be credited automatically</p>
+              </div>
+            </div>
+          </Card>
 
-        <div>
-          <label className="block text-sm font-medium text-dark-gray mb-2">
-            Payment Method
-          </label>
-          <div className="space-y-2">
-            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-light-gray">
-              <input type="radio" name="paymentMethod" value="stk" checked={paymentMethod === 'stk'} onChange={e => setPaymentMethod(e.target.value as 'stk' | 'paybill' | 'till')} className="text-primary" />
-              <span className="text-sm">M-Pesa Direct (STK Push)</span>
-            </label>
-            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-light-gray">
-              <input type="radio" name="paymentMethod" value="paybill" checked={paymentMethod === 'paybill'} onChange={e => setPaymentMethod(e.target.value as 'stk' | 'paybill' | 'till')} className="text-primary" />
-              <span className="text-sm">M-Pesa Paybill</span>
-            </label>
-            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-light-gray">
-              <input type="radio" name="paymentMethod" value="till" checked={paymentMethod === 'till'} onChange={e => setPaymentMethod(e.target.value as 'stk' | 'paybill' | 'till')} className="text-primary" />
-              <span className="text-sm">M-Pesa Till Number</span>
-            </label>
+          <div className="flex gap-3 justify-center">
+            <Button variant="secondary" onClick={handleClose}>
+              Close (I'll check later)
+            </Button>
+            <Button variant="primary" onClick={() => { onSuccess(); handleClose(); }}>
+              Done
+            </Button>
           </div>
         </div>
-
-        {paymentMethod === 'stk' && <div className="space-y-4">
-            <PhoneInput 
-              label="Mobile Number" 
-              value={phoneNumber} 
-              onChange={value => setPhoneNumber(value)} 
-              placeholder="7XXXXXXXX"
-              helperText="Enter your M-Pesa registered number" 
-              required 
-            />
-            <Card className="bg-blue-50 border border-blue-200">
-              <div className="flex items-start space-x-3">
-                <InfoIcon className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-blue-900">
-                  You'll receive an M-Pesa prompt on your phone. Enter your PIN
-                  to complete the payment.
-                </p>
-              </div>
-            </Card>
-          </div>}
-
-        {paymentMethod === 'paybill' && <Card className="bg-light-gray">
-            <div className="space-y-2 text-sm">
-              <p className="font-semibold text-dark-gray">
-                Payment Instructions:
-              </p>
-              <ol className="list-decimal list-inside space-y-1 text-gray-700">
-                <li>Go to M-Pesa menu</li>
-                <li>Select Lipa na M-Pesa → Paybill</li>
-                <li>
-                  Enter Paybill Number: <strong>4283222</strong>
-                </li>
-                  <li>
-                    Enter Account Number: <strong>WALLET{selectedWalletId}</strong>
-                  </li>
-                <li>
-                  Enter Amount: <strong>KES {amount || '0'}</strong>
-                </li>
-                <li>Enter your M-Pesa PIN</li>
-              </ol>
-            </div>
-          </Card>}
-
-        {paymentMethod === 'till' && <Card className="bg-light-gray">
-            <div className="space-y-2 text-sm">
-              <p className="font-semibold text-dark-gray">
-                Payment Instructions:
-              </p>
-              <ol className="list-decimal list-inside space-y-1 text-gray-700">
-                <li>Go to M-Pesa menu</li>
-                <li>Select Lipa na M-Pesa → Buy Goods and Services</li>
-                <li>
-                  Enter Till Number: <strong>5847392</strong>
-                </li>
-                <li>
-                  Enter Amount: <strong>KES {amount || '0'}</strong>
-                </li>
-                <li>Enter your M-Pesa PIN</li>
-              </ol>
-            </div>
-          </Card>}
-
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit">
-            {paymentMethod === 'stk' ? 'Send Payment Request' : 'I have paid'}
-          </Button>
+      ) : step === 'success' ? (
+        <div className="space-y-4 text-center py-6">
+          <CheckCircleIcon className="w-16 h-16 text-emerald-500 mx-auto" />
+          <h3 className="text-lg font-semibold text-dark-gray">Top Up Initiated</h3>
+          <p className="text-gray-600 text-sm">Your Main Wallet will be credited once the payment is confirmed.</p>
         </div>
-      </form>
-    </Modal>;
+      ) : (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-dark-gray mb-2">Payment Method</label>
+            <div className="grid grid-cols-2 gap-3">
+              <label
+                className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                  paymentMethod === 'stk' ? 'border-azure bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="stk"
+                  checked={paymentMethod === 'stk'}
+                  onChange={() => setPaymentMethod('stk')}
+                  className="hidden"
+                />
+                <SmartphoneIcon className={`w-5 h-5 ${paymentMethod === 'stk' ? 'text-azure' : 'text-gray-400'}`} />
+                <div>
+                  <p className={`text-sm font-medium ${paymentMethod === 'stk' ? 'text-azure' : 'text-dark-gray'}`}>STK Push</p>
+                  <p className="text-xs text-gray-500">Prompt on phone</p>
+                </div>
+              </label>
+
+              <label
+                className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                  paymentMethod === 'paybill' ? 'border-azure bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="paybill"
+                  checked={paymentMethod === 'paybill'}
+                  onChange={() => setPaymentMethod('paybill')}
+                  className="hidden"
+                />
+                <CreditCardIcon className={`w-5 h-5 ${paymentMethod === 'paybill' ? 'text-azure' : 'text-gray-400'}`} />
+                <div>
+                  <p className={`text-sm font-medium ${paymentMethod === 'paybill' ? 'text-azure' : 'text-dark-gray'}`}>Paybill</p>
+                  <p className="text-xs text-gray-500">Manual payment</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {paymentMethod === 'stk' ? (
+            <form onSubmit={handleSTKPush} className="space-y-4">
+              <Input
+                label="Amount (KES)"
+                type="number"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                min="1"
+                placeholder="0"
+                required
+              />
+              <PhoneInput
+                label="M-Pesa Phone Number"
+                value={phoneNumber}
+                onChange={value => setPhoneNumber(value)}
+                placeholder="7XXXXXXXX"
+                helperText="The M-Pesa prompt will be sent to this number"
+                required
+              />
+
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+              )}
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button type="button" variant="secondary" onClick={handleClose} disabled={isLoading}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isLoading || !phoneNumber || !amount}>
+                  {isLoading ? 'Sending...' : 'Send M-Pesa Request'}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <Input
+                label="Amount (KES)"
+                type="number"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                min="1"
+                placeholder="0"
+              />
+
+              <Card className="bg-light-gray">
+                <div className="space-y-3 text-sm">
+                  <p className="font-semibold text-dark-gray">Paybill Payment Instructions</p>
+                  <ol className="list-decimal list-inside space-y-1.5 text-gray-700">
+                    <li>Go to M-Pesa menu on your phone</li>
+                    <li>Select <strong>Lipa na M-Pesa → Paybill</strong></li>
+                    <li>Business Number: <strong className="text-azure text-base">{paybillNumber}</strong></li>
+                    <li>
+                      Account Number:{' '}
+                      <strong className="text-azure text-base">
+                        {mpesaAccountRef ?? <span className="text-gray-400 italic">Loading…</span>}
+                      </strong>
+                    </li>
+                    <li>Amount: <strong>KES {amount || '—'}</strong></li>
+                    <li>Enter your M-Pesa PIN and confirm</li>
+                  </ol>
+                </div>
+              </Card>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button type="button" variant="secondary" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button type="button" onClick={handlePaybillDone} disabled={!amount}>
+                  I Have Paid
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </Modal>
+  );
 }
