@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type React from 'react';
-import { CalendarIcon, ClockIcon, FileTextIcon, FilterIcon, PlusIcon, SearchIcon } from 'lucide-react';
+import { CalendarIcon, ClockIcon, FileTextIcon, FilterIcon, PlusIcon, SearchIcon, BadgeCheckIcon, ReceiptIcon } from 'lucide-react';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
@@ -88,24 +88,60 @@ export function Expenses({ onOpenModal, onNavigate, expenses, events }: Expenses
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <SummaryCard icon={<FileTextIcon className="w-6 h-6 text-azure" />} label="Total Expenses" count={summary.totalCount} amount={summary.totalAmount} />
-        <SummaryCard icon={<ClockIcon className="w-6 h-6 text-yellow-600" />} label="Pending" count={summary.pendingCount} amount={summary.pendingAmount} variant="warning" />
-        <SummaryCard icon={<FileTextIcon className="w-6 h-6 text-green-600" />} label="Approved" count={summary.approvedCount} amount={summary.approvedAmount} variant="success" />
-        <SummaryCard icon={<FileTextIcon className="w-6 h-6 text-green-600" />} label="Completed" count={summary.completedCount} amount={summary.completedAmount} variant="success" />
+      {/* Summary Section */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <SummaryCard 
+          icon={<FileTextIcon className="w-5 h-5 text-azure" />} 
+          label="Total Expenses" 
+          count={summary.totalCount} 
+          amount={summary.totalAmount} 
+          className="bg-white border-none shadow-sm"
+        />
+        <SummaryCard 
+          icon={<ClockIcon className="w-5 h-5 text-warning" />} 
+          label="Pending Approval" 
+          count={summary.pendingCount} 
+          amount={summary.pendingAmount} 
+          variant="warning"
+          className="bg-white border-none shadow-sm"
+        />
+        <SummaryCard 
+          icon={<BadgeCheckIcon className="w-5 h-5 text-success" />} 
+          label="Approved" 
+          count={summary.approvedCount} 
+          amount={summary.approvedAmount} 
+          variant="success"
+          className="bg-white border-none shadow-sm"
+        />
+        <SummaryCard 
+          icon={<ReceiptIcon className="w-5 h-5 text-primary" />} 
+          label="Completed" 
+          count={summary.completedCount} 
+          amount={summary.completedAmount} 
+          variant="success"
+          className="bg-white border-none shadow-sm"
+        />
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      {/* Tabs Section */}
+      <div className="bg-white p-1.5 rounded-2xl inline-flex gap-1 shadow-sm border border-gray-100">
         {[
-          ['all', 'All Expenses'],
-          ['event', 'Event Expenses'],
-          ['activation', 'Activation Expenses'],
-          ['operational', 'Operational Expenses'],
+          ['all', 'All'],
+          ['event', 'Events'],
+          ['activation', 'Activations'],
+          ['operational', 'Operational'],
         ].map(([value, label]) => (
-          <Button key={value} variant={selectedType === value ? 'primary' : 'secondary'} size="sm" onClick={() => { setSelectedType(value); setSelectedEvent('all'); }}>
-            <CalendarIcon className="w-4 h-4" />
+          <button
+            key={value}
+            onClick={() => { setSelectedType(value); setSelectedEvent('all'); }}
+            className={`px-8 py-2.5 rounded-xl text-sm font-black transition-all duration-300 uppercase tracking-wider ${
+              selectedType === value 
+                ? 'bg-primary text-black shadow-lg shadow-primary/20' 
+                : 'text-gray-400 hover:bg-gray-50'
+            }`}
+          >
             {label}
-          </Button>
+          </button>
         ))}
       </div>
 
@@ -143,26 +179,42 @@ export function Expenses({ onOpenModal, onNavigate, expenses, events }: Expenses
         </Card>
       )}
 
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-dark-gray">{selectedEventData ? `${selectedEventData.name} Expenses` : 'All Expenses'}</h3>
+      <Card className="overflow-hidden border-none shadow-sm">
+        <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between bg-white">
+          <div>
+            <h3 className="font-bold text-dark-gray text-lg">
+              {selectedEventData ? `${selectedEventData.name} Expenses` : 'Recent Expenses'}
+            </h3>
+            <p className="text-xs text-gray-500">Showing {filteredExpenses.length} transactions</p>
+          </div>
           <ExportButton onExport={handleExport} />
         </div>
-        <Table columns={columns} data={filteredExpenses} defaultSortKey="startDate" defaultSortDirection="desc" itemsPerPage={15} />
+        <div className="bg-white">
+          <Table columns={columns} data={filteredExpenses} defaultSortKey="startDate" defaultSortDirection="desc" itemsPerPage={15} />
+        </div>
       </Card>
     </div>
   );
 }
 
-function SummaryCard({ icon, label, count, amount, variant = 'default' }: { icon: React.ReactNode; label: string; count: number; amount: number; variant?: 'default' | 'warning' | 'success' }) {
+function SummaryCard({ icon, label, count, amount, variant = 'default', className = '' }: { icon: React.ReactNode; label: string; count: number; amount: number; variant?: 'default' | 'warning' | 'success'; className?: string }) {
   return (
-    <Card className="p-5">
-      <div className="flex items-center justify-between mb-2">
-        <div className="p-2 bg-primary bg-opacity-10 rounded-lg">{icon}</div>
-        <Badge variant={variant}>{count}</Badge>
+    <Card className={`p-5 group hover:shadow-md transition-all duration-300 ${className}`}>
+      <div className="flex items-start justify-between mb-4">
+        <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+          {icon}
+        </div>
+        <Badge variant={variant} className="px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+          {count} items
+        </Badge>
       </div>
-      <p className="text-gray-600 text-sm mb-1">{label}</p>
-      <p className="text-3xl font-bold text-dark-gray">KES {amount.toLocaleString()}</p>
+      <div>
+        <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">{label}</p>
+        <div className="flex items-baseline gap-1">
+          <span className="text-[10px] font-bold text-gray-400">KES</span>
+          <p className="text-2xl font-black text-dark-gray">{amount.toLocaleString()}</p>
+        </div>
+      </div>
     </Card>
   );
 }

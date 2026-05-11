@@ -21,7 +21,11 @@ export function ExpenseDetail({ expense, event, wallet, onNavigate, onOpenModal,
 
   return (
     <div className="space-y-6">
-      <Button variant="secondary" onClick={() => onNavigate('expenses')} className="flex items-center gap-2">
+      <Button 
+        variant="primary" 
+        onClick={() => onNavigate('expenses')} 
+        className="flex items-center gap-2 !bg-azure !text-white !shadow-none hover:!bg-azure/90"
+      >
         <ArrowLeftIcon className="w-4 h-4" />
         Back to Expenses
       </Button>
@@ -34,7 +38,12 @@ export function ExpenseDetail({ expense, event, wallet, onNavigate, onOpenModal,
             <Badge variant={getExpenseStatusVariant(expense.status)}>{expense.status}</Badge>
             {expense.expenseType && <Badge variant="default">{expense.expenseType}</Badge>}
             {canEdit && onOpenModal && (
-              <Button variant="secondary" size="sm" onClick={() => onOpenModal('edit-expense', expense)} className="ml-2">
+              <Button 
+                variant="primary" 
+                size="sm" 
+                onClick={() => onOpenModal('edit-expense', expense)} 
+                className="ml-2 !bg-primary/10 !text-azure !shadow-none hover:!bg-primary/20"
+              >
                 <EditIcon className="w-3 h-3 mr-1" />
                 Edit Expense
               </Button>

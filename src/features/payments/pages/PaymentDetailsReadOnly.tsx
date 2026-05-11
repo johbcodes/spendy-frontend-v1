@@ -44,7 +44,7 @@ export function PaymentDetailsReadOnly({
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <Button variant="secondary" size="sm" onClick={() => onNavigate('payments')}>
+          <Button variant="primary" size="sm" onClick={() => onNavigate('payments')} className="!bg-azure !text-white !shadow-none hover:!bg-azure/90">
             <ArrowLeftIcon className="w-4 h-4" />
           </Button>
           <h1 className="text-3xl font-bold text-dark-gray">Payment Details</h1>
@@ -230,11 +230,10 @@ export function PaymentDetailsReadOnly({
                 </div>
               </div>
 
-              {/* Action Buttons - Read-only for completed payments */}
               <div className="pt-4 border-t">
                 <Button
-                  variant="secondary"
-                  className="w-full"
+                  variant="primary"
+                  className="w-full !bg-azure !text-white !shadow-none hover:!bg-azure/90"
                   onClick={() => onNavigate('payments')}
                 >
                   Back to Payments

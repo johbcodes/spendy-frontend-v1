@@ -38,25 +38,22 @@ export function ApproveExpenseModal({
   useEffect(() => {
     if (isOpen && walletsArray.length > 0) {
       const eventType = request.type || '';
-
       let defaultWallet: Wallet | undefined;
 
-      console.log(`[Approval] Event type: "${eventType}"`);
-
       if (eventType === 'Operation') {
-        // Operations use the Operations Wallet.
-        defaultWallet = walletsArray.find(w => w.type === 'Operations Wallet');
-        console.log('[Approval] Event type "Operation" uses Operations Wallet');
-      } else if (eventType === 'Event' || eventType === 'Activation') {
-        // Events and activations use the Events Wallet.
-        defaultWallet = walletsArray.find(w => w.type === 'Events Wallet');
-        console.log(`[Approval] Event type "${eventType}" uses Events Wallet`);
+        defaultWallet = walletsArray.find(w => w.type === 'Operations');
+      } else if (eventType === 'Event') {
+        defaultWallet = walletsArray.find(w => w.type === 'Events');
+      } else if (eventType === 'Activation') {
+        defaultWallet = walletsArray.find(w => w.type === 'Activation') ||
+                        walletsArray.find(w => w.type === 'Events');
       }
 
-      // Fallback to any available wallet
+      // Fallback to Main wallet
       if (!defaultWallet) {
-        defaultWallet = walletsArray.find(w => w.type === 'Main Wallet' || w.type === 'Operations Wallet' || w.type === 'Events Wallet');
-        console.log(`[Approval] No matching wallet, using fallback: ${defaultWallet?.name}`);
+        defaultWallet = walletsArray.find(w => w.type === 'Main') ||
+                        walletsArray.find(w => w.type === 'Events') ||
+                        walletsArray.find(w => w.type === 'Operations');
       }
 
       if (defaultWallet) {

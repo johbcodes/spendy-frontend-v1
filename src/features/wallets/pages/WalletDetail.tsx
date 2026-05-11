@@ -87,9 +87,9 @@ export function WalletDetail({ wallet, transactions, onOpenModal, currentUser, o
     { key: 'amount', label: 'Amount', render: amountCell },
     { key: 'status', label: 'Status', render: t => <Badge variant={getStatusVariant(t.status)}>{t.status}</Badge> },
     {
-      key: 'actions', label: 'Actions', render: () => (
+      key: 'actions', label: 'Actions', render: (txn) => (
         <div className="flex items-center gap-1">
-          <Button variant="secondary" size="xs">View</Button>
+          <Button variant="primary" size="xs" className="!bg-azure !text-white !shadow-none hover:!bg-azure/90" onClick={() => onNavigate('transaction-detail', txn.id)}>View</Button>
           <Button variant="ghost" size="xs">Print</Button>
         </div>
       ),
@@ -108,10 +108,10 @@ export function WalletDetail({ wallet, transactions, onOpenModal, currentUser, o
         </div>
         {isAdmin && (
           <div className="flex items-center gap-3">
-            <Button variant="secondary" onClick={() => onOpenModal('wallet-transfer')}>
+            <Button variant="primary" onClick={() => onOpenModal('wallet-transfer')} className="!bg-azure !text-white !shadow-none hover:!bg-azure/90">
               <ArrowRightLeftIcon className="w-4 h-4" /> Transfer
             </Button>
-            <Button variant="success" onClick={() => onOpenModal('fund-wallet')}>
+            <Button variant="primary" onClick={() => onOpenModal('fund-wallet')} className="!shadow-none">
               <TrendingUpIcon className="w-4 h-4" /> Fund Wallet
             </Button>
           </div>

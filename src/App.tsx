@@ -9,6 +9,7 @@ import { EventDetail } from './features/events/pages/EventDetail';
 import { EditEvent } from './features/events/pages/EditEvent';
 import { Wallets } from './features/wallets/pages/Wallets';
 import { WalletDetail } from './features/wallets/pages/WalletDetail';
+import { TransactionDetail } from './features/wallets/pages/TransactionDetail';
 import { Expenses } from './features/expenses/pages/Expenses';
 import { ExpenseDetail } from './features/expenses/pages/ExpenseDetail';
 import { Payments } from './features/payments/pages/Payments';
@@ -98,6 +99,7 @@ const ROUTE_MAP: Record<string, string> = {
   'edit-event': '/events/edit',
   'wallets': '/wallets',
   'wallet-detail': '/wallets',
+  'transaction-detail': '/wallets/transaction',
   'expenses': '/expenses',
   'expense-detail': '/expenses',
   'payments': '/payments',
@@ -134,6 +136,7 @@ const PAGE_MAP: Record<string, string> = {
   '/dashboard': 'dashboard',
   '/events': 'events',
   '/wallets': 'wallets',
+  '/wallets/transaction': 'transaction-detail',
   '/expenses': 'expenses',
   '/payments': 'payments',
   '/approvals': 'approvals',
@@ -213,6 +216,10 @@ export function App() {
     if (!page) {
       if (primaryPath === '/events' && id) page = 'event-detail';
       else if (primaryPath === '/inventory' && id) page = 'inventory-detail';
+      else if (primaryPath === '/wallets' && segments[1] === 'transaction' && segments[2]) {
+        page = 'transaction-detail';
+        setSelectedId(segments[2]);
+      }
       else if (primaryPath === '/wallets' && id) page = 'wallet-detail';
       else if (primaryPath === '/expenses' && id) page = 'expense-detail';
       else if (primaryPath === '/payments' && id) page = 'payment-detail';
@@ -1632,42 +1639,30 @@ export function App() {
   };
 
   const handleAddExpense = async (expenseData: Partial<Expense>) => {
-    const event = events.find(e => e.id === expenseData.eventId);
+    // For Operations with no linked event (department-only), skip event lookup
+    const event = expenseData.eventId ? events.find(e => e.id === expenseData.eventId) : undefined;
+    const eventType = event?.type || (expenseData.expenseType === 'Operational Expense' ? 'Operation' : '');
 
-    // IMPORTANT: Use the wallets from state (already filtered by company and loaded from backend)
-    // Staff don't see company wallets in UI, but system needs them for expense routing
     const companyWallets = wallets.filter(w => w.companyId === currentUser?.companyId);
-
-    console.log(`📝 [Add Expense] User: ${currentUser?.role}, Company: ${currentUser?.companyName}, CompanyId: ${currentUser?.companyId}`);
-    console.log(`📝 [Add Expense] Event: "${event?.name}", Event Type: "${event?.type}"`);
-    console.log(`📝 [Add Expense] Company wallets available:`, companyWallets.map(w => ({ name: w.name, type: w.type, companyId: w.companyId })));
-
-    // IMPORTANT: Determine default wallet based on EVENT TYPE
-    // Event type → Events Wallet, Operation → Operations Wallet, Activation → Events Wallet
-    // Admin can change the wallet during approval
     let targetWallet = undefined as (typeof companyWallets[number]) | undefined;
-    const eventType = event?.type || '';
+
 
     // Determine wallet based on event type
     if (eventType === 'Operation') {
-      // Operations → Operations Wallet
-      targetWallet = companyWallets.find(w => w.type === 'Operations Wallet');
-      console.log(`📝 [Add Expense] Event type "Operation" → Looking for Operations Wallet, found: ${targetWallet?.name || 'NONE'}`);
-    } else if (eventType === 'Event' || eventType === 'Activation') {
-      // Events and Activations → Events Wallet
-      // First try to find event-specific wallet
-      targetWallet = companyWallets.find(w => w.type === 'Events Wallet' && w.linkedEvent === expenseData.eventId);
-      if (!targetWallet) {
-        targetWallet = companyWallets.find(w => w.type === 'Events Wallet');
-      }
-      console.log(`📝 [Add Expense] Event type "${eventType}" → Looking for Events Wallet, found: ${targetWallet?.name || 'NONE'}`);
+      targetWallet = companyWallets.find(w => w.type === 'Operations');
+    } else if (eventType === 'Activation') {
+      targetWallet = companyWallets.find(w => w.type === 'Activation') ||
+                     companyWallets.find(w => w.type === 'Events');
+    } else if (eventType === 'Event') {
+      targetWallet = companyWallets.find(w => w.type === 'Events' && w.linkedEvent === expenseData.eventId) ||
+                     companyWallets.find(w => w.type === 'Events');
     }
 
-    // Ultimate fallback: use any available company wallet
+    // Fallback: any available company wallet
     if (!targetWallet) {
-      console.log(`⚠️ [Add Expense] No matching wallet found, searching for fallback...`);
-      targetWallet = companyWallets.find(w => w.type === 'Events Wallet' || w.type === 'Operations Wallet' || w.type === 'Main Wallet');
-      console.log(`⚠️ [Add Expense] Fallback wallet: ${targetWallet?.name || 'NONE'}`);
+      targetWallet = companyWallets.find(w => w.type === 'Main') ||
+                     companyWallets.find(w => w.type === 'Events') ||
+                     companyWallets.find(w => w.type === 'Operations');
     }
 
     // For Staff and Store Manager, allow expense creation without wallet assignment
@@ -3624,6 +3619,12 @@ export function App() {
       case 'wallet-detail': {
         const selectedWallet = walletsArray.find(w => w.id === selectedId);
         return <WalletDetail wallet={selectedWallet} transactions={transactions} onOpenModal={handleOpenModal} currentUser={currentUser!} onNavigate={handleNavigate} users={users} />;
+      }
+      case 'transaction-detail': {
+        const transaction = transactions.find(t => t.id === selectedId);
+        if (!transaction) return <Wallets onNavigate={handleNavigate} onOpenModal={handleOpenModal} wallets={walletsArray} onDeleteWallet={handleDeleteWallet} currentUser={currentUser!} users={users} />;
+        const wallet = walletsArray.find(w => w.id === transaction.walletId);
+        return <TransactionDetail transaction={transaction} wallet={wallet} onNavigate={handleNavigate} currentUser={currentUser!} />;
       }
       case 'expenses':
         if (isStaff) {

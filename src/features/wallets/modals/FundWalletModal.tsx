@@ -17,7 +17,7 @@ interface FundWalletModalProps {
   mpesaAccountRef?: string | null;
 }
 
-type Step = 'form' | 'stk-pending' | 'success';
+type Step = 'form' | 'stk-pending' | 'success' | 'failed';
 
 export function FundWalletModal({
   isOpen,
@@ -33,6 +33,52 @@ export function FundWalletModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [mpesaAccountRef, setMpesaAccountRef] = useState<string | null>(propMpesaRef ?? null);
+  const [topupRequestId, setTopupRequestId] = useState<string | null>(null);
+  const [pollingAttempts, setPollingAttempts] = useState(0);
+
+  // Poll for STK status
+  useEffect(() => {
+    if (step !== 'stk-pending' || !topupRequestId) return;
+
+    const maxAttempts = 60; // 60 attempts × 2s = 2 minutes
+    const pollInterval = 2000;
+
+    const poll = async () => {
+      try {
+        const response = await walletsApi.topupStatus(topupRequestId);
+        const status = (response as any).data?.status ?? (response as any).status;
+
+        if (status === 'Completed') {
+          setStep('success');
+          onSuccess();
+          setTimeout(() => {
+            resetForm();
+            onClose();
+          }, 2000);
+        } else if (status === 'Failed') {
+          const reason = (response as any).data?.failureReason ?? (response as any).failureReason ?? 'Payment failed';
+          setError(reason);
+          setStep('failed');
+        } else if (pollingAttempts >= maxAttempts) {
+          setError('Payment confirmation timed out. Please check your wallet balance.');
+          setStep('failed');
+        } else {
+          setPollingAttempts(prev => prev + 1);
+        }
+      } catch (err) {
+        // Continue polling on error
+        if (pollingAttempts >= maxAttempts) {
+          setError('Unable to confirm payment status. Please check your wallet.');
+          setStep('failed');
+        } else {
+          setPollingAttempts(prev => prev + 1);
+        }
+      }
+    };
+
+    const timer = setInterval(poll, pollInterval);
+    return () => clearInterval(timer);
+  }, [step, topupRequestId, pollingAttempts, onSuccess, onClose]);
 
   useEffect(() => {
     if (isOpen && propMpesaRef === undefined) {
@@ -48,6 +94,8 @@ export function FundWalletModal({
     setStep('form');
     setError('');
     setIsLoading(false);
+    setTopupRequestId(null);
+    setPollingAttempts(0);
   };
 
   const handleClose = () => {
@@ -68,7 +116,10 @@ export function FundWalletModal({
     setIsLoading(true);
     setError('');
     try {
-      await walletsApi.topup({ phone: phoneNumber, amount: numAmount });
+      const response = await walletsApi.topup({ phone: phoneNumber, amount: numAmount });
+      const requestId = (response as any).data?.topupRequestId ?? (response as any).topupRequestId;
+      setTopupRequestId(requestId);
+      setPollingAttempts(0);
       setStep('stk-pending');
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? err?.message ?? 'Failed to initiate payment';
@@ -99,6 +150,7 @@ export function FundWalletModal({
             <p className="text-gray-600 text-sm max-w-xs">
               An M-Pesa prompt has been sent to <strong>{phoneNumber}</strong>. Enter your PIN to complete the payment of <strong>KES {parseFloat(amount).toLocaleString()}</strong>.
             </p>
+            <p className="text-xs text-gray-400">Waiting for confirmation… this will update automatically.</p>
           </div>
 
           <Card className="bg-blue-50 border border-blue-200 text-left">
@@ -117,16 +169,27 @@ export function FundWalletModal({
             <Button variant="secondary" onClick={handleClose}>
               Close (I'll check later)
             </Button>
-            <Button variant="primary" onClick={() => { onSuccess(); handleClose(); }}>
-              Done
-            </Button>
           </div>
         </div>
       ) : step === 'success' ? (
         <div className="space-y-4 text-center py-6">
           <CheckCircleIcon className="w-16 h-16 text-emerald-500 mx-auto" />
-          <h3 className="text-lg font-semibold text-dark-gray">Top Up Initiated</h3>
-          <p className="text-gray-600 text-sm">Your Main Wallet will be credited once the payment is confirmed.</p>
+          <h3 className="text-lg font-semibold text-dark-gray">Payment Confirmed!</h3>
+          <p className="text-gray-600 text-sm">KES {parseFloat(amount).toLocaleString()} has been added to your Main Wallet.</p>
+        </div>
+      ) : step === 'failed' ? (
+        <div className="space-y-6 text-center py-4">
+          <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+            <InfoIcon className="w-8 h-8 text-red-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-dark-gray">Payment Failed</h3>
+            <p className="text-gray-600 text-sm mt-1">{error}</p>
+          </div>
+          <div className="flex gap-3 justify-center">
+            <Button variant="secondary" onClick={handleClose}>Close</Button>
+            <Button variant="primary" onClick={() => { setStep('form'); setError(''); }}>Try Again</Button>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">

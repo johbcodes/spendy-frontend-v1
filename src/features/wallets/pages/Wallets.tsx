@@ -36,10 +36,10 @@ const WALLET_TYPE_ICONS: Record<string, React.ElementType> = {
 
 const WALLET_TYPE_COLORS: Record<string, string> = {
   Main: 'bg-azure text-white',
-  Operations: 'bg-purple-600 text-white',
-  Events: 'bg-emerald-600 text-white',
+  Operations: 'bg-emerald-600 text-white',
+  Events: 'bg-emerald-700 text-white',
   Activation: 'bg-orange-500 text-white',
-  Personal: 'bg-gray-600 text-white',
+  Personal: 'bg-zinc-600 text-white',
 };
 
 export function Wallets({ onNavigate, onOpenModal, wallets, onDeleteWallet, users, currentUser }: WalletsProps) {
@@ -74,10 +74,12 @@ export function Wallets({ onNavigate, onOpenModal, wallets, onDeleteWallet, user
 
       {/* Main Wallet Hero */}
       {mainWallet ? (
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-azure via-blue-600 to-indigo-700 p-8 text-white shadow-xl">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute -top-8 -right-8 w-64 h-64 rounded-full bg-white" />
-            <div className="absolute -bottom-16 -left-8 w-48 h-48 rounded-full bg-white" />
+        <div className="relative overflow-hidden rounded-3xl bg-azure p-8 text-white shadow-2xl border border-white/10 group">
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-primary/20 blur-3xl group-hover:bg-primary/30 transition-colors duration-700" />
+            <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-azure-light/20 blur-3xl" />
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5" />
           </div>
 
           <div className="relative z-10">
@@ -95,12 +97,11 @@ export function Wallets({ onNavigate, onOpenModal, wallets, onDeleteWallet, user
                 </p>
                 <p className="text-sm opacity-70 mt-1">{mainWallet.currency ?? 'KES'} · Available Balance</p>
               </div>
-
               {!isStaff && (
                 <Button
                   variant="primary"
                   onClick={() => onOpenModal('fund-wallet')}
-                  className="bg-white text-azure hover:bg-blue-50 font-semibold shadow-lg"
+                  className="font-bold shadow-lg h-12"
                 >
                   <TrendingUpIcon className="w-4 h-4" /> Top Up via M-Pesa
                 </Button>
@@ -137,11 +138,10 @@ export function Wallets({ onNavigate, onOpenModal, wallets, onDeleteWallet, user
             )}
           </div>
 
-          <div className="absolute bottom-4 right-6">
+          <div className="absolute bottom-6 right-8">
             <Button
-              variant="secondary"
+              variant="glass"
               size="sm"
-              className="bg-white bg-opacity-20 text-white border-white border-opacity-30 hover:bg-opacity-30"
               onClick={() => onNavigate('wallet-detail', mainWallet.id)}
             >
               <EyeIcon className="w-4 h-4" /> View Transactions
@@ -197,17 +197,18 @@ export function Wallets({ onNavigate, onOpenModal, wallets, onDeleteWallet, user
 
                     <div className="flex gap-2 pt-2 border-t border-gray-100">
                       <Button
-                        variant="secondary"
+                        variant="primary"
                         size="sm"
-                        className="flex-1"
+                        className="flex-1 !bg-azure !text-white !shadow-none hover:!bg-azure/90"
                         onClick={() => onNavigate('wallet-detail', wallet.id)}
                       >
                         <EyeIcon className="w-3.5 h-3.5" /> View
                       </Button>
                       {!isStaff && (
                         <Button
-                          variant="secondary"
+                          variant="primary"
                           size="sm"
+                          className="!bg-primary/10 !text-azure !shadow-none hover:!bg-primary/20"
                           onClick={() => onOpenModal('wallet-transfer')}
                           title="Transfer funds from Main Wallet"
                         >
